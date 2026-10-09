@@ -89,9 +89,8 @@ public class GuiStats extends Screen {
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         if (heldButton != null && !heldButton.isUnderMouse(mouseX, mouseY)) stopHolding();
-        renderTransparentBackground(graphics);
-        drawFittedText(graphics, title.getString(), Math.max(5, gridTop - 20), 0xFFFFFFFF);
         super.render(graphics, mouseX, mouseY, partialTick);
+        drawFittedText(graphics, title.getString(), Math.max(5, gridTop - 20), 0xFFFFFFFF);
         drawFittedText(graphics, I18n.get("ui.gokistats_reborn.menu_hint"), height - 28, 0xFFCCCCCC);
         drawFittedText(graphics, I18n.get("ui.currentxp", DataHelper.getXPTotal(player)), height - 14, 0xFFFFFFFF);
         for (var renderable : renderables) {
