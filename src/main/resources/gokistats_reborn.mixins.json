@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.infstudio.goki.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "LegacyPlayerDataMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

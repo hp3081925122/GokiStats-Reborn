@@ -2,10 +2,10 @@ package net.infstudio.goki.common.stat.tool;
 
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.common.Tags;
+import net.neoforged.neoforge.common.Tags;
 
 public class StatTrimming extends ToolSpecificStat {
-    private static final TagKey<Item> TAG = Tags.Items.SHEARS;
+    private static final TagKey<Item> TAG = Tags.Items.TOOLS_SHEAR;
 
     public StatTrimming(int id, String key, int limit) {
         super(id, key, limit);

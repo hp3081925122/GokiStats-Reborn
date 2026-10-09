@@ -15,25 +15,17 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.event.AttachCapabilitiesEvent;
-import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.event.entity.living.LivingFallEvent;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.entity.living.LivingEvent;
+import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.minecraft.tags.DamageTypeTags;
 
-@Mod.EventBusSubscriber(modid = Reference.MODID)
+@EventBusSubscriber(modid = Reference.MODID)
 public class CommonHandler {
-    @SubscribeEvent
-    public static void injectCapability(AttachCapabilitiesEvent<Entity> event) {
-        if (event.getObject() instanceof Player) {
-            var provider = new CapabilityStat.Provider();
-            event.addCapability(Reference.STORAGE_ID, provider);
-            event.addListener(provider::invalidate);
-        }
-    }
 
     @SubscribeEvent
     public static void playerFall(LivingFallEvent event) {
@@ -53,14 +45,12 @@ public class CommonHandler {
      */
     @SubscribeEvent
     public static void onPlayerClone(PlayerEvent.Clone event) {
-        event.getOriginal().reviveCaps();
-        event.getOriginal().getCapability(CapabilityStat.STAT).ifPresent(original ->
-                event.getEntity().getCapability(CapabilityStat.STAT).ifPresent(copy -> {
-                    original.stateMap.forEach((stat, state) -> copy.stateMap.put(stat,
-                            new net.infstudio.goki.api.stat.StatState(stat, state.level, state.revertedLevel)));
-                    net.infstudio.goki.GokiStats.log.debug("Copied {} skill states for player respawn, death={}", copy.stateMap.size(), event.isWasDeath());
-                }));
-        event.getOriginal().invalidateCaps();
+        var original = event.getOriginal().getData(CapabilityStat.STAT);
+        var copy = event.getEntity().getData(CapabilityStat.STAT);
+        copy.stateMap.clear();
+        original.stateMap.forEach((stat, state) -> copy.stateMap.put(stat,
+                new net.infstudio.goki.api.stat.StatState(stat, state.level, state.revertedLevel)));
+        net.infstudio.goki.GokiStats.log.debug("Copied {} skill states for player respawn, death={}", copy.stateMap.size(), event.isWasDeath());
     }
 
     @SubscribeEvent
@@ -68,7 +58,7 @@ public class CommonHandler {
         var player = event.getEntity();
         if (!player.level().isClientSide()) {
             if (!event.isEndConquered() && GokiConfig.SERVER.loseStatsOnDeath.get()) {
-                for (var stat = 0; stat < StatBase.totalStats.orElse(0); stat++) {
+                for (var stat = 0; stat < StatBase.stats.size(); stat++) {
                     DataHelper.multiplyPlayerStatLevel(player,
                             StatBase.stats.get(stat),
                             level -> level - (int) (GokiConfig.SERVER.loseStatsMultiplier.get() * level));
@@ -120,7 +110,7 @@ public class CommonHandler {
     }
 
     @SubscribeEvent
-    public static void entityHurt(LivingHurtEvent event) {
+    public static void entityHurt(LivingIncomingDamageEvent event) {
         var source = event.getSource();
 
         var victim = event.getEntity();

@@ -1,23 +1,23 @@
-# GokiStats Reborn 1.20.1 Forge 服务端测试记录
+# GokiStats Reborn 1.21.1 NeoForge 服务端测试记录
 
-日期：2026-10-09。结果：**26 组功能检查全部通过，失败 0**。一个 GameTest 测试入口依次执行 26 组检查；Forge 报告 `All 1 required tests passed :)`，Gradle 正常退出并显示 `BUILD SUCCESSFUL`。
+日期：2026-10-09。结果：**26 组功能检查全部通过，失败 0**。一个 GameTest 测试入口依次执行 26 组检查；NeoForge GameTest 报告 `All 1 required tests passed :)`，Gradle 正常退出并显示 `BUILD SUCCESSFUL`。
 
 ## 环境和方法
 
-- Java：Microsoft OpenJDK 17.0.18；Minecraft 1.20.1；Forge 47.4.23；Gradle 8.8。
+- Java：Microsoft OpenJDK 21.0.11；Minecraft 1.21.1；NeoForge 21.1.233；Gradle 8.8。
 - 模组：`gokistats_reborn`，显示名称 GokiStats Reborn，`1.4.0-port.1`，21 项上游已注册技能。
-- 隔离目录：`D:\AI临时文件\gokistats-reborn-test\project`。正式工程和测试副本的 69 个生产 Java 源文件逐个 SHA-256 一致。
-- 启动任务：`runGameTestServer --offline --console=plain`，实际加载服务端世界、配置、注册表、Forge 事件总线和掉落表。
-- 玩家采用 Forge FakePlayer 的测试子类；升级调用正式服务端包处理器并使用真实服务器线程上下文。登录、换维度、战斗、跳跃、重生与玩家 tick 通过事件总线触发。方块掉落调用实际 `Block.getDrops`。
+- 隔离目录：`E:\模组\发cf的模组\GokiStats\1.21.1-neoforge-gokistats-reborn\runs\gameTestServer`。迁移分支包含 70 个生产 Java 源文件，测试入口单独位于 `src/gametest/java`。
+- 启动任务：`runGameTestServer -PgokiServerTests --offline --console=plain`，实际加载服务端世界、配置、注册表、NeoForge 事件总线和掉落表。
+- 玩家采用 NeoForge 开发环境中的 FakePlayer 测试子类；升级调用正式服务端包处理器并使用真实服务器线程上下文。登录、换维度、战斗、跳跃、重生与玩家 tick 通过事件总线触发。方块掉落调用实际 `Block.getDrops`。
 - 同步通过内存 Netty 通道截取正式 `PacketDistributor.PLAYER` 发出的数据包，检查目标、消息类型与内容；没有真实 Minecraft 客户端。
 - 测试用配置在内存中隔离，强制随机技能触发后恢复原值。测试类和空结构模板只在隔离副本，不加入正式模组 JAR。
-- ForgeGradle 的外部连通性探测阻塞后，使用 JVM 参数 `-Dnet.minecraftforge.gradle.check.certs=false` 跳过该构建检查。整个任务使用已缓存依赖的离线模式。
+- 本次使用已缓存的 NeoForge 开发依赖并以离线模式运行。整个任务使用已缓存依赖的离线模式。
 
-## 服务端修复与改名兼容
+## 服务端迁移修复与改名兼容
 
-1. 能力注册原先订阅 Forge 总线，收不到 `RegisterCapabilitiesEvent`。改为模组总线，`CapabilityStat.STAT.isRegistered()` 已通过实际测试。
-2. 玩家能力失效会永久使旧 `LazyOptional` 失效，`reviveCaps()` 不会重建它，导致死亡复制丢等级和退还数。现在失效时通知旧引用，恢复读取时重新创建包装并保留存储。死亡复制、存储独立和完整重生掉级/回血链路均通过。
-3. 攀爬额外移动原先包含水平 X/Z 分量，重复增加水平位移。改为只增加垂直分量，潜行停止加速。
+1. 迁移到 NeoForge 玩家附件 API，`CapabilityStat.STAT` 在实体构造时提供默认存储，注册和附件状态已通过实际测试。
+2. 增加旧 ForgeCaps 技能 NBT 到 NeoForge 附件的读取迁移，等级、退还次数、生命技能和经验保持不丢失；死亡复制、存储独立和完整重生链路均通过。
+3. NeoForge 事件订阅统一使用静态类注册，避免实例注册与静态订阅方法冲突；攀爬额外移动只增加垂直分量，潜行停止加速。
 
 4. 本轮改名为 GokiStats Reborn / `gokistats_reborn`，资源、技能注册、网络和语言键同步迁移；保留旧 `/gokistats` 命令别名。
 5. 玩家能力外层存档键有意保留 `gokistats:stat_storage`；读取旧 `gokistats:<技能>` 后转换为新技能，后续保存写新技能 ID。服务端配置文件名继续保留 `gokistats-server.toml` 和 `stat_*.toml`。
@@ -31,7 +31,7 @@
 | `renamed_identity_and_skill_ids` | 新模组 ID 正确加载、旧 ID 不再声明、显示名和技能注册命名空间一致 | 通过 |
 | `legacy_skill_nbt_migration` | 构造旧 ForgeCaps 技能 NBT，验证等级、退还次数、生命技能和经验保持，再保存为新技能 ID | 通过 |
 | `registry_and_tags` | 技能注册、工具标签、声音和掉落序列化器 | 通过 |
-| `capability_registered` | 能力注册到正确的模组事件总线 | 通过 |
+| `capability_registered` | 玩家附件注册和默认存储可用 | 通过 |
 | `capability_attached` | 玩家能力包含21项技能 | 通过 |
 | `upgrade_refund_and_experience` | 升级扣费、退还经验与退还计数 | 通过 |
 | `invalid_requests_and_limits` | 非法请求、满级和经验不足 | 通过 |
@@ -57,23 +57,22 @@
 
 ## 证据与复现
 
-成功日志：`server-test-passed.log`。末尾摘要为 `GOKI_SERVER_TEST RESULT passed=26 failed=0`、`All 1 required tests passed :)` 和 `BUILD SUCCESSFUL`，随后保存世界并正常退出。
+成功日志：`D:\AI临时文件\goki-1211\server-test.log`。末尾摘要为 `GOKI_SERVER_TEST RESULT passed=26 failed=0`、`All 1 required tests passed :)` 和 `BUILD SUCCESSFUL`，随后保存世界并正常退出。
 
-测试入口源文件：`D:\AI临时文件\gokistats-reborn-test\project\src\main\java\net\infstudio\goki\servertest\GokiServerTests.java`。
+测试入口源文件：`E:\模组\发cf的模组\GokiStats\1.21.1-neoforge-gokistats-reborn\src\gametest\java\net\infstudio\goki\servertest\GokiServerTests.java`。
 
 在隔离工程目录用 PowerShell 复现：
 
 ```powershell
-$env:JAVA_HOME='C:\Users\30819\.jdks\ms-17.0.18'
-$env:JAVA_TOOL_OPTIONS='-Dfile.encoding=UTF-8 -Duser.language=en -Duser.country=US -Dnet.minecraftforge.gradle.check.certs=false'
-.\gradlew.bat runGameTestServer --offline --console=plain
+$env:JAVA_HOME='C:\Users\30819\.jdks\ms-21.0.11'
+.\gradlew.bat runGameTestServer -PgokiServerTests --offline --console=plain
 ```
 
 首轮发现真实缺陷后已修复重测；其余测试设置修正包括模拟玩家潜行姿态、事件对象不可重复投递、配置自动保存干扰、内存通道和实际伤害标签选择。当前所有检查均运行通过，未跳过失败项。
 
 ## 验证边界
 
-- 这是 Forge 源码开发环境中的实际服务端功能测试，未装载发布用的重混淆 JAR 到独立生产服务端。
+- 这是 NeoForge 1.21.1 源码开发环境中的实际服务端功能测试，未装载发布用的重混淆 JAR 到独立生产服务端。
 - 没有真实客户端连接，未验证界面、声音视觉效果、客户端收到同步后的显示、移动操作手感或真实双人联机。
 - 新旧技能 NBT 格式保存读取已测，旧数据由测试构造；未验证关闭服务器后真实玩家重新登录、跨版本旧世界迁移或其他模组整合兼容性。
 - Combat 检查观察正式伤害事件处理结果；概率技能采用高倍率强制触发，未统计正常倍率下的触发分布。

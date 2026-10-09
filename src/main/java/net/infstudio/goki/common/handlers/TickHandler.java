@@ -7,40 +7,43 @@ import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
-import net.minecraftforge.server.ServerLifecycleHooks;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.util.ObfuscationReflectionHelper;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
 
-import java.util.UUID;
+import net.minecraft.resources.ResourceLocation;
+import net.infstudio.goki.common.utils.Reference;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static net.infstudio.goki.common.utils.Reference.MODID;
 
-@Mod.EventBusSubscriber(modid = MODID)
+@EventBusSubscriber(modid = MODID)
 public class TickHandler {
-    public static final UUID knockbackResistanceID = UUID.fromString("824d15a0-8a36-4fe8-a702-9fed51dd0b7a");
-    public static final UUID stealthSpeedID = UUID.fromString("7074741e-8f96-49f3-b67c-4f6b49e0c51b");
-    public static final UUID swimSpeedID = UUID.fromString("c080a374-72e4-4b4a-bcd0-b47e2a019ea7");
+    public static final ResourceLocation knockbackResistanceID = ResourceLocation.fromNamespaceAndPath(Reference.MODID, "knockbackresistanceid");
+    public static final ResourceLocation stealthSpeedID = ResourceLocation.fromNamespaceAndPath(Reference.MODID, "stealthspeedid");
+    public static final ResourceLocation swimSpeedID = ResourceLocation.fromNamespaceAndPath(Reference.MODID, "swimspeedid");
 
     public static AtomicInteger tickTimer = new AtomicInteger();
 
     @SubscribeEvent
-    public static void playerTick(TickEvent.PlayerTickEvent event) {
-        if (event.phase == TickEvent.Phase.START && event.side.isServer()) { // Due to issue #32
-            var player = event.player;
+    public static void playerTick(PlayerTickEvent.Pre event) {
+        if (!event.getEntity().level().isClientSide()) { // Due to issue #32
+            var player = event.getEntity();
 
             handleTaskPlayerAPI(player);
             if (!player.isAlive()) return;
             var attributeInstance = player.getAttribute(Attributes.MOVEMENT_SPEED);
             if (attributeInstance == null) return;
-            var modifier = new AttributeModifier(stealthSpeedID, "SneakSpeed", Stats.STEALTH.getBonus(player) / 100.0F, AttributeModifier.Operation.fromValue(1));
+            var modifier = new AttributeModifier(stealthSpeedID, Stats.STEALTH.getBonus(player) / 100.0F, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
             if (player.isCrouching()) {
                 var existing = attributeInstance.getModifier(stealthSpeedID);
-                if (existing == null || Double.compare(existing.getAmount(), modifier.getAmount()) != 0) {
+                if (existing == null || Double.compare(existing.amount(), modifier.amount()) != 0) {
                     attributeInstance.removeModifier(stealthSpeedID);
                     attributeInstance.addTransientModifier(modifier);
                 }
@@ -50,10 +53,10 @@ public class TickHandler {
 
             attributeInstance = player.getAttribute(Attributes.KNOCKBACK_RESISTANCE);
             if (attributeInstance == null) return;
-            modifier = new AttributeModifier(knockbackResistanceID, "KnockbackResistance", Stats.STEADY_GUARD.getBonus(player), AttributeModifier.Operation.fromValue(0));
+            modifier = new AttributeModifier(knockbackResistanceID, Stats.STEADY_GUARD.getBonus(player), AttributeModifier.Operation.ADD_VALUE);
             if (player.isBlocking()) {
                 var existing = attributeInstance.getModifier(knockbackResistanceID);
-                if (existing == null || Double.compare(existing.getAmount(), modifier.getAmount()) != 0) {
+                if (existing == null || Double.compare(existing.amount(), modifier.amount()) != 0) {
                     attributeInstance.removeModifier(knockbackResistanceID);
                     attributeInstance.addTransientModifier(modifier);
                 }
@@ -64,8 +67,8 @@ public class TickHandler {
     }
 
     @SubscribeEvent
-    public void serverTick(TickEvent.ServerTickEvent event) {
-        if (event.phase == TickEvent.Phase.END && GokiConfig.SERVER.syncTicks.get() > 0) {
+    public static void serverTick(ServerTickEvent.Post event) {
+        if (GokiConfig.SERVER.syncTicks.get() > 0) {
             if (tickTimer.get() == GokiConfig.SERVER.syncTicks.get()) {
                 tickTimer.lazySet(0);
                 for (var player : ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers()) {
@@ -78,7 +81,7 @@ public class TickHandler {
     }
 
     public static boolean isJumping(LivingEntity livingBase) {
-        return Boolean.TRUE.equals(ObfuscationReflectionHelper.getPrivateValue(LivingEntity.class, livingBase, "field_70703_bu"));
+        return Boolean.TRUE.equals(ObfuscationReflectionHelper.getPrivateValue(LivingEntity.class, livingBase, "jumping"));
     }
 
     private static void handleTaskPlayerAPI(Player player) {

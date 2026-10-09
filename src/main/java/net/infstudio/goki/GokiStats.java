@@ -10,15 +10,17 @@ import net.infstudio.goki.common.network.GokiPacketHandler;
 import net.infstudio.goki.common.stat.StatLootCondition;
 import net.infstudio.goki.common.utils.Reference;
 import net.minecraft.resources.ResourceKey;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.NewRegistryEvent;
-import net.minecraftforge.registries.RegisterEvent;
-import net.minecraftforge.registries.RegistryBuilder;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModLoadingContext;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.ModContainer;
+import net.infstudio.goki.api.capability.CapabilityStat;
+import net.neoforged.neoforge.registries.NewRegistryEvent;
+import net.neoforged.neoforge.registries.RegisterEvent;
+import net.neoforged.neoforge.registries.RegistryBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -27,9 +29,8 @@ public class GokiStats {
     public static GokiStats instance;
     public static final Logger log = LogManager.getLogger(Reference.MODID);
 
-    public GokiStats() {
+    public GokiStats(IEventBus eventBus, ModContainer container) {
         instance = this;
-        IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
         try {
             Class.forName(Stats.class.getName());
         } catch (ClassNotFoundException e) {
@@ -39,14 +40,15 @@ public class GokiStats {
         eventBus.addListener(this::registerStats);
         GokiSounds.register(eventBus);
         StatLootCondition.CONDITIONS.register(eventBus);
-        GokiPacketHandler.registerMessages();
-        MinecraftForge.EVENT_BUS.register(new TickHandler());
-        initConfig();
-        log.info("GokiStats Reborn unofficial Forge 1.20.1 port initialized with {} skills", StatBase.stats.size());
+        eventBus.addListener(GokiPacketHandler::registerMessages);
+        CapabilityStat.register(eventBus);
+        NeoForge.EVENT_BUS.register(TickHandler.class);
+        initConfig(container);
+        log.info("GokiStats Reborn unofficial NeoForge 1.21.1 port initialized with {} skills", StatBase.stats.size());
     }
 
     private void createRegistry(NewRegistryEvent event) {
-        event.create(new RegistryBuilder<Stat>().setName(StatBase.REGISTRY_NAME), registry -> StatBase.REGISTRY = registry);
+        StatBase.REGISTRY = event.create(new RegistryBuilder<Stat>(ResourceKey.createRegistryKey(StatBase.REGISTRY_NAME)).sync(true));
     }
 
     private void registerStats(RegisterEvent event) {
@@ -57,10 +59,10 @@ public class GokiStats {
         });
     }
 
-    public void initConfig() {
-        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, GokiConfig.serverSpec, Reference.LEGACY_MODID + "-server.toml");
+    public void initConfig(ModContainer container) {
+        container.registerConfig(ModConfig.Type.SERVER, GokiConfig.serverSpec, Reference.LEGACY_MODID + "-server.toml");
         for (StatBase<?> stat : StatBase.stats) {
-            ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, stat.configSpec, "stat_" + stat.getRegistryName().getPath() + ".toml");
+            container.registerConfig(ModConfig.Type.SERVER, stat.configSpec, "stat_" + stat.getRegistryName().getPath() + ".toml");
         }
     }
 }

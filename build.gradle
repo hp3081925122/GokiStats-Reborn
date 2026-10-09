@@ -1,12 +1,18 @@
-// 当前文件只保留最小的 Forge 开发、构建和运行配置。
+// 当前文件只保留最小的 NeoForge 开发、构建和运行配置。
 plugins {
+    id 'java-library'
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    id 'net.neoforged.gradle.userdev' version '7.1.37'
 }
 
+version = project.mod_version
+group = project.mod_group_id
+
 repositories {
+    mavenLocal()
+    maven { url = 'https://maven.neoforged.net/releases' }
     maven {
         url = 'https://www.cursemaven.com'
         content {
@@ -15,126 +21,89 @@ repositories {
     }
 }
 
-version = project.mod_version
-group = project.mod_group_id
-
 base {
-    archivesName = "${project.mod_id}-${project.minecraft_version}-forge"
+    archivesName = "${project.mod_id}-${project.minecraft_version}-neoforge"
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 java.withSourcesJar()
 
-minecraft {
-    mappings channel: project.mapping_channel, version: project.mapping_version
-    copyIdeResources = true
+runs {
+    configureEach {
+        systemProperty 'forge.logging.markers', 'REGISTRIES'
+        systemProperty 'forge.logging.console.level', 'debug'
+        modSource project.sourceSets.main
+    }
 
-    runs {
-        configureEach {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
+    client {
+        systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+    }
 
-            mods {
-                "${project.mod_id}" {
-                    source sourceSets.main
-                }
-            }
-        }
+    server {
+        systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        programArgument '--nogui'
+    }
 
-        client {
-            property 'forge.enabledGameTestNamespaces', project.mod_id
-        }
+    gameTestServer {
+        systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+    }
 
-        server {
-            args '--nogui'
-        }
-
-        gameTestServer {
-            property 'forge.enabledGameTestNamespaces', project.mod_id
-        }
-
-        data {
-            workingDirectory project.file('run-data')
-            args '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
-        }
+    data {
+        programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
     }
 }
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 dependencies {
-    minecraft "net.minecraftforge:forge:${project.minecraft_version}-${project.forge_version}"
+    implementation "net.neoforged:neoforge:${project.neo_version}"
 }
 
-tasks.named('processResources', ProcessResources).configure {
-    // 用 UTF-8 读取元数据，避免 Properties 默认编码损坏中文。
-    def modMetadata = new Properties()
-    file('gradle.properties').withReader('UTF-8') { modMetadata.load(it) }
-    filteringCharset = 'UTF-8'
-    inputs.file('gradle.properties')
+tasks.withType(ProcessResources).configureEach {
+    def metadata = new Properties()
+    file("gradle.properties").withReader("UTF-8") { metadata.load(it) }
+    filteringCharset = "UTF-8"
     def replaceProperties = [
             minecraft_version: project.minecraft_version,
             minecraft_version_range: project.minecraft_version_range,
-            forge_version: project.forge_version,
-            forge_version_range: project.forge_version_range,
+            neo_version: project.neo_version,
+            neo_version_range: project.neo_version_range,
             loader_version_range: project.loader_version_range,
             mod_id: project.mod_id,
-            mod_name: modMetadata.getProperty('mod_name'),
+            mod_name: metadata.getProperty("mod_name"),
             mod_license: project.mod_license,
             mod_version: project.mod_version,
-            mod_authors: modMetadata.getProperty('mod_authors'),
-            mod_description: modMetadata.getProperty('mod_description')
+            mod_authors: metadata.getProperty("mod_authors"),
+            mod_description: metadata.getProperty("mod_description")
     ]
     inputs.properties replaceProperties
 
-    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
-        expand replaceProperties + [project: project]
+    filesMatching(['META-INF/neoforge.mods.toml', 'pack.mcmeta']) {
+        expand replaceProperties
     }
-}
-
-tasks.named('jar', Jar).configure {
-    manifest {
-        attributes([
-                'Specification-Title': project.mod_id,
-                'Specification-Vendor': project.mod_authors,
-                'Specification-Version': '1',
-                'Implementation-Title': project.name,
-                'Implementation-Version': project.jar.archiveVersion,
-                'Implementation-Vendor': project.mod_authors
-        ])
-    }
-    finalizedBy 'reobfJar'
 }
 
 publishing {
     publications {
         register('mavenJava', MavenPublication) {
-            artifact jar
+            from components.java
         }
     }
     repositories {
         maven {
-            url "file://${project.projectDir}/mcmodsrepo"
+            url "file://${project.projectDir}/repo"
         }
     }
 }
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
-    options.compilerArgs += ['-Xmaxerrs', '300']
 }
 
- tasks.named('jar', Jar).configure {
-    from('LICENSE', 'RESOURCE-LICENSE.md', 'NOTICE.md')
- }
-
-tasks.named('sourcesJar', Jar).configure {
-    from('LICENSE', 'RESOURCE-LICENSE.md', 'NOTICE.md')
-}
-
+tasks.named('jar', Jar).configure { from('LICENSE', 'RESOURCE-LICENSE.md', 'NOTICE.md') }
+tasks.named('sourcesJar', Jar).configure { from('LICENSE', 'RESOURCE-LICENSE.md', 'NOTICE.md') }
 tasks.register('sourceProjectZip', Zip) {
-    archiveBaseName = "${project.mod_id}-${project.minecraft_version}-forge"
+    archiveBaseName = "${project.mod_id}-${project.minecraft_version}-neoforge"
     archiveVersion = project.version
     archiveClassifier = 'source-project'
     destinationDirectory = layout.buildDirectory.dir('distributions')
@@ -144,7 +113,9 @@ tasks.register('sourceProjectZip', Zip) {
         include 'LICENSE', 'LICENSE.txt', '*.md'
     }
 }
+tasks.named('build').configure { dependsOn 'sourceProjectZip' }
 
-tasks.named('build').configure {
-    dependsOn 'sourceProjectZip'
+if (project.hasProperty('gokiServerTests')) {
+    sourceSets.main.java.srcDir 'src/gametest/java'
+    sourceSets.main.resources.srcDir 'src/gametest/resources'
 }

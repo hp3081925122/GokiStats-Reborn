@@ -6,12 +6,13 @@ import net.infstudio.goki.common.utils.Reference;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.network.PacketDistributor;
 
-@Mod.EventBusSubscriber(modid = Reference.MODID)
+@EventBusSubscriber(modid = Reference.MODID)
 public class StatsCommand {
     @SubscribeEvent
     public static void register(RegisterCommandsEvent event) {
@@ -24,12 +25,12 @@ public class StatsCommand {
                 .then(Commands.literal("gui")
                         .executes(context -> {
                             var player = context.getSource().getPlayerOrException();
-                            GokiPacketHandler.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new S2COpenGui());
+                            PacketDistributor.sendToPlayer(player, new S2COpenGui());
                             return 1;
                         })
                         .then(Commands.argument("target", EntityArgument.player()).executes(context -> {
                             var player = EntityArgument.getPlayer(context, "target");
-                            GokiPacketHandler.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new S2COpenGui());
+                            PacketDistributor.sendToPlayer(player, new S2COpenGui());
                             return 1;
                         }))));
         event.getDispatcher().register(Commands.literal(Reference.LEGACY_MODID)

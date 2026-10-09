@@ -1,21 +1,23 @@
 package net.infstudio.goki.common.init;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.infstudio.goki.common.handlers.GokiLootModifier;
 import net.infstudio.goki.common.utils.Reference;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraftforge.common.loot.IGlobalLootModifier;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.common.loot.IGlobalLootModifier;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 public class GokiSounds {
-    private static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, Reference.MODID);
-    private static final DeferredRegister<Codec<? extends IGlobalLootModifier>> MODIFIERS = DeferredRegister.create(ForgeRegistries.Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS, Reference.MODID);
-    public static final SoundEvent TREASURE = SoundEvent.createVariableRangeEvent(new ResourceLocation(Reference.MODID, "treasure"));
-    public static final SoundEvent MAGICIAN = SoundEvent.createVariableRangeEvent(new ResourceLocation(Reference.MODID, "magician"));
-    public static final SoundEvent REAPER = SoundEvent.createVariableRangeEvent(new ResourceLocation(Reference.MODID, "reaper"));
+    private static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(Registries.SOUND_EVENT, Reference.MODID);
+    private static final DeferredRegister<MapCodec<? extends IGlobalLootModifier>> MODIFIERS = DeferredRegister.create(NeoForgeRegistries.Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS, Reference.MODID);
+    public static final SoundEvent TREASURE = SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(Reference.MODID, "treasure"));
+    public static final SoundEvent MAGICIAN = SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(Reference.MODID, "magician"));
+    public static final SoundEvent REAPER = SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(Reference.MODID, "reaper"));
 
     public static void register(IEventBus eventBus) {
         SOUNDS.register("treasure", () -> TREASURE);

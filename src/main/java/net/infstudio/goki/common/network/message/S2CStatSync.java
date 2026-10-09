@@ -3,6 +3,8 @@ package net.infstudio.goki.common.network.message;
 import net.minecraft.network.FriendlyByteBuf;
 
 public class S2CStatSync implements IMessage {
+    public static final net.minecraft.network.protocol.common.custom.CustomPacketPayload.Type<S2CStatSync> TYPE = new net.minecraft.network.protocol.common.custom.CustomPacketPayload.Type<>(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(net.infstudio.goki.common.utils.Reference.MODID, "s2cstatsync"));
+    public net.minecraft.network.protocol.common.custom.CustomPacketPayload.Type<S2CStatSync> type() { return TYPE; }
     public int stat, amount, reverted;
 
     public S2CStatSync() {

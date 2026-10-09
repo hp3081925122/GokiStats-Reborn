@@ -7,24 +7,21 @@ import net.infstudio.goki.common.network.message.S2CSyncAll;
 import net.infstudio.goki.common.utils.DataHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.function.Supplier;
 
 public class PacketSyncClientHandler {
-    public static void acceptSync(S2CStatSync message, Supplier<NetworkEvent.Context> context) {
-        var ctx = context.get();
-        ctx.enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> acceptSyncInternal(message)));
-        ctx.setPacketHandled(true);
+    public static void acceptSync(S2CStatSync message, IPayloadContext context) {
+        var ctx = context;
+        ctx.enqueueWork(() -> acceptSyncInternal(message));
     }
 
-    public static void acceptSyncAll(S2CSyncAll message, Supplier<NetworkEvent.Context> context) {
-        var ctx = context.get();
-        ctx.enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> acceptSyncAllInternal(message)));
-        ctx.setPacketHandled(true);
+    public static void acceptSyncAll(S2CSyncAll message, IPayloadContext context) {
+        var ctx = context;
+        ctx.enqueueWork(() -> acceptSyncAllInternal(message));
     }
 
     @OnlyIn(Dist.CLIENT)

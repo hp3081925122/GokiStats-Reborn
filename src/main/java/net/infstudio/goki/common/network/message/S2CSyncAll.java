@@ -6,6 +6,8 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 
 public class S2CSyncAll implements IMessage {
+    public static final net.minecraft.network.protocol.common.custom.CustomPacketPayload.Type<S2CSyncAll> TYPE = new net.minecraft.network.protocol.common.custom.CustomPacketPayload.Type<>(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(net.infstudio.goki.common.utils.Reference.MODID, "s2csyncall"));
+    public net.minecraft.network.protocol.common.custom.CustomPacketPayload.Type<S2CSyncAll> type() { return TYPE; }
     public int[] statLevels = new int[0];
     public int[] revertedStatLevels = new int[0];
 

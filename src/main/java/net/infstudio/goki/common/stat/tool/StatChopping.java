@@ -7,7 +7,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 
 public class StatChopping extends ToolSpecificStat {
-    private static final TagKey<Item> TAG = ItemTags.create(new ResourceLocation(Reference.MODID, "chopping"));
+    private static final TagKey<Item> TAG = ItemTags.create(ResourceLocation.fromNamespaceAndPath(Reference.MODID, "chopping"));
 
     public StatChopping(int id, String key, int limit) {
         super(id, key, limit);

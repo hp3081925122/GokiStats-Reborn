@@ -15,22 +15,20 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.registries.RegistryBuilder;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.common.ModConfigSpec;
+import net.minecraft.core.Registry;
+import net.neoforged.neoforge.registries.RegistryBuilder;
 
 import java.util.Objects;
 import java.util.Arrays;
 
 public abstract class StatBase<T extends StatConfig> implements Stat, Configurable<T> {
-    public static final ResourceLocation REGISTRY_NAME = new ResourceLocation(Reference.MODID, "stats");
-    public static IForgeRegistry<Stat> REGISTRY;
+    public static final ResourceLocation REGISTRY_NAME = ResourceLocation.fromNamespaceAndPath(Reference.MODID, "stats");
+    public static Registry<Stat> REGISTRY;
     private final ResourceLocation registryName;
     public static final ObjectList<StatBase<?>> stats = new ObjectArrayList<>(16);
-    public static LazyOptional<Integer> totalStats = LazyOptional.of(() -> stats.size());
     public int imageID;
     public String key;
 
@@ -39,7 +37,7 @@ public abstract class StatBase<T extends StatConfig> implements Stat, Configurab
     private final int limit;
 
     public final T config;
-    public final ForgeConfigSpec configSpec;
+    public final ModConfigSpec configSpec;
 
     public StatBase(int imgId, String key, int limit) {
         this.imageID = imgId;
@@ -47,12 +45,12 @@ public abstract class StatBase<T extends StatConfig> implements Stat, Configurab
         this.key = key;
         stats.add(this);
 
-        final var specPair = new ForgeConfigSpec.Builder()
+        final var specPair = new ModConfigSpec.Builder()
                 .configure(this::createConfig);
         configSpec = specPair.getRight();
         config = specPair.getLeft();
 
-        registryName = new ResourceLocation(Reference.MODID, key.toLowerCase(java.util.Locale.ROOT));
+        registryName = ResourceLocation.fromNamespaceAndPath(Reference.MODID, key.toLowerCase(java.util.Locale.ROOT));
     }
 
     @Override
@@ -66,7 +64,7 @@ public abstract class StatBase<T extends StatConfig> implements Stat, Configurab
 
     @Override
     @SuppressWarnings("unchecked")
-    public T createConfig(ForgeConfigSpec.Builder builder) {
+    public T createConfig(ModConfigSpec.Builder builder) {
         builder.comment("服务端配置 / Server configuration settings")
                 .push("stats." + key);
         return (T) new StatConfig(builder);

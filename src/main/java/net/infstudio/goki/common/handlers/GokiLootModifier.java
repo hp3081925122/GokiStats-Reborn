@@ -1,6 +1,6 @@
 package net.infstudio.goki.common.handlers;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.infstudio.goki.api.stat.Stats;
@@ -16,14 +16,16 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraftforge.common.loot.IGlobalLootModifier;
-import net.minecraftforge.common.loot.LootModifier;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.common.loot.IGlobalLootModifier;
+import net.neoforged.neoforge.common.loot.LootModifier;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 import javax.annotation.Nonnull;
 
 public class GokiLootModifier extends LootModifier {
-    public static final Codec<GokiLootModifier> CODEC = RecordCodecBuilder.create(instance -> codecStart(instance).apply(instance, GokiLootModifier::new));
+    public static final MapCodec<GokiLootModifier> CODEC = RecordCodecBuilder.mapCodec(instance -> codecStart(instance).apply(instance, GokiLootModifier::new));
     private static final ThreadLocal<Boolean> APPLYING_TREASURE = ThreadLocal.withInitial(() -> false);
 
     protected GokiLootModifier(LootItemCondition[] conditions) {
@@ -31,7 +33,7 @@ public class GokiLootModifier extends LootModifier {
     }
 
     @Override
-    public Codec<? extends IGlobalLootModifier> codec() {
+    public MapCodec<? extends IGlobalLootModifier> codec() {
         return CODEC;
     }
 
@@ -46,9 +48,9 @@ public class GokiLootModifier extends LootModifier {
         var block = context.getParam(LootContextParams.BLOCK_STATE).getBlock();
         var position = BlockPos.containing(context.getParam(LootContextParams.ORIGIN));
         if (Stats.TREASURE_FINDER.isEnabled() && DataHelper.getPlayerStatLevel(player, Stats.TREASURE_FINDER) > 0) {
-            var blockId = ForgeRegistries.BLOCKS.getKey(block);
-            var id = new ResourceLocation(blockId.getNamespace(), "treasure_finder/" + blockId.getPath());
-            var table = context.getResolver().getLootTable(id);
+            var blockId = BuiltInRegistries.BLOCK.getKey(block);
+            var id = ResourceLocation.fromNamespaceAndPath(blockId.getNamespace(), "treasure_finder/" + blockId.getPath());
+            var table = context.getLevel().getServer().reloadableRegistries().getLootTable(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.LOOT_TABLE, id));
             var items = new ObjectArrayList<ItemStack>();
             APPLYING_TREASURE.set(true);
             try {
@@ -68,18 +70,18 @@ public class GokiLootModifier extends LootModifier {
                 if (player.getRandom().nextDouble() * 100.0D > Stats.MINING_MAGICIAN.getBonus(player)) continue;
                 var item = generatedLoot.get(i);
                 if (item.getItem() instanceof BlockItem blockItem && blockItem.getBlock() == block) {
-                    var extra = ForgeRegistries.BLOCKS.tags().getTag(StatMiningMagician.MAGICIAN_ORE).getRandomElement(context.getRandom());
+                    var extra = BuiltInRegistries.BLOCK.getTag(StatMiningMagician.MAGICIAN_ORE).orElseThrow().getRandomElement(context.getRandom());
                     if (extra.isPresent()) {
-                        var stack = new ItemStack(extra.get(), item.getCount());
+                        var stack = new ItemStack(extra.get().value(), item.getCount());
                         if (!stack.isEmpty()) {
                             generatedLoot.add(stack);
                             magicHappened = true;
                         }
                     }
                 } else {
-                    var extra = ForgeRegistries.ITEMS.tags().getTag(StatMiningMagician.MAGICIAN_ITEM).getRandomElement(context.getRandom());
+                    var extra = BuiltInRegistries.ITEM.getTag(StatMiningMagician.MAGICIAN_ITEM).orElseThrow().getRandomElement(context.getRandom());
                     if (extra.isPresent()) {
-                        generatedLoot.add(new ItemStack(extra.get(), item.getCount()));
+                        generatedLoot.add(new ItemStack(extra.get().value(), item.getCount()));
                         magicHappened = true;
                     }
                     break;

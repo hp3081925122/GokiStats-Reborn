@@ -3,7 +3,8 @@ package net.infstudio.goki.common.utils;
 import net.infstudio.goki.api.capability.CapabilityStat;
 import net.infstudio.goki.api.stat.Stat;
 import net.infstudio.goki.api.stat.StatState;
-import java.util.UUID;
+import net.minecraft.resources.ResourceLocation;
+import net.infstudio.goki.common.utils.Reference;
 import net.infstudio.goki.api.stat.Stats;
 import net.infstudio.goki.common.config.GokiConfig;
 import net.minecraft.world.damagesource.DamageSource;
@@ -20,12 +21,10 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import java.util.function.IntFunction;
 
 public class DataHelper {
-    public static final UUID MAX_HEALTH_MODIFIER = UUID.fromString("caea9f48-05a6-42c7-b381-4a1799c7350f");
+    public static final ResourceLocation MAX_HEALTH_MODIFIER = ResourceLocation.fromNamespaceAndPath(Reference.MODID, "max_health_modifier");
 
     private static StatState getState(Player player, Stat stat) {
-        return player.getCapability(CapabilityStat.STAT).resolve()
-                .map(storage -> storage.stateMap.computeIfAbsent(stat, key -> new StatState(key, 0, 0)))
-                .orElseGet(() -> new StatState(stat, 0, 0));
+        return player.getData(CapabilityStat.STAT).stateMap.computeIfAbsent(stat, key -> new StatState(key, 0, 0));
     }
     public static boolean canPlayerRevertStat(Player player, Stat stat) {
         return getPlayerStatLevel(player, stat) > 0 && (GokiConfig.SERVER.globalMaxRevertLevel.get() == -1 ||
@@ -59,10 +58,10 @@ public class DataHelper {
         if (attribute == null) return;
         double bonus = Stats.MAX_HEALTH.isEnabled() ? Stats.MAX_HEALTH.getBonus(amount) : 0;
         var previous = attribute.getModifier(MAX_HEALTH_MODIFIER);
-        if (previous != null && Double.compare(previous.getAmount(), bonus) == 0) return;
+        if (previous != null && Double.compare(previous.amount(), bonus) == 0) return;
         attribute.removeModifier(MAX_HEALTH_MODIFIER);
         if (bonus != 0) {
-            attribute.addTransientModifier(new AttributeModifier(MAX_HEALTH_MODIFIER, "GokiStatsRebornHealth", bonus, AttributeModifier.Operation.ADDITION));
+            attribute.addTransientModifier(new AttributeModifier(MAX_HEALTH_MODIFIER, bonus, AttributeModifier.Operation.ADD_VALUE));
         }
         if (player.getHealth() > player.getMaxHealth()) player.setHealth(player.getMaxHealth());
     }
@@ -92,8 +91,11 @@ public class DataHelper {
     }
 
     public static boolean hasDamageModifier(ItemStack stack) {
-        var modifiers = stack.getItem().getAttributeModifiers(EquipmentSlot.MAINHAND, stack).get(Attributes.ATTACK_DAMAGE);
-        return !modifiers.isEmpty();
+        boolean[] found = {false};
+        stack.forEachModifier(EquipmentSlot.MAINHAND, (attribute, modifier) -> {
+            if (attribute.equals(Attributes.ATTACK_DAMAGE)) found[0] = true;
+        });
+        return found[0];
     }
 
     public static float getDamageDealt(Player player, Entity target, DamageSource source) {
@@ -103,7 +105,7 @@ public class DataHelper {
         boolean critical;
         var stack = player.getMainHandItem();
         if (targetIsLiving) {
-            bonusDamage += EnchantmentHelper.getDamageBonus(stack, ((LivingEntity) target).getMobType());
+            bonusDamage += player.level() instanceof net.minecraft.server.level.ServerLevel serverLevel ? EnchantmentHelper.modifyDamage(serverLevel, stack, target, source, damage) - damage : 0;
         }
         if ((damage > 0.0F) || (bonusDamage > 0.0F)) {
             critical = (player.fallDistance > 0.0F) && (!player.onGround()) && (!player.onClimbable()) && (!player.isInWater()) && (!player.hasEffect(MobEffects.BLINDNESS)) && (player.getVehicle() == null) && (targetIsLiving);

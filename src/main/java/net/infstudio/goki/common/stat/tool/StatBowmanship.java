@@ -8,7 +8,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 
 public class StatBowmanship extends ToolSpecificStat {
-    private static final TagKey<Item> TAG = ItemTags.create(new ResourceLocation(Reference.MODID, "bow"));
+    private static final TagKey<Item> TAG = ItemTags.create(ResourceLocation.fromNamespaceAndPath(Reference.MODID, "bow"));
 
     public StatBowmanship(int id, String key, int limit) {
         super(id, key, limit);

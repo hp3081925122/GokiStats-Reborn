@@ -6,18 +6,19 @@ import net.infstudio.goki.common.utils.DataHelper;
 import net.infstudio.goki.common.utils.Reference;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.network.PacketDistributor;
 
-@Mod.EventBusSubscriber(modid = Reference.MODID)
+@EventBusSubscriber(modid = Reference.MODID)
 public class SyncEventHandler {
     public static void syncPlayerData(Player player) {
         if (!(player instanceof ServerPlayer)) return;
         DataHelper.resetMaxHealth(player);
-        GokiPacketHandler.CHANNEL.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), new S2CSyncAll(player));
+        PacketDistributor.sendToPlayer((ServerPlayer) player, new S2CSyncAll(player));
     }
 
     @SubscribeEvent

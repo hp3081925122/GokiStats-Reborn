@@ -3,7 +3,7 @@ package net.infstudio.goki.common.stat.damage;
 import net.infstudio.goki.api.stat.StatBase;
 import net.infstudio.goki.common.config.stats.DamageSourceProtectionConfig;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +14,7 @@ public abstract class DamageSourceProtectionStat extends StatBase<DamageSourcePr
     }
 
     @Override
-    public DamageSourceProtectionConfig createConfig(ForgeConfigSpec.Builder builder) {
+    public DamageSourceProtectionConfig createConfig(ModConfigSpec.Builder builder) {
         return new DamageSourceProtectionConfig(builder, getDefaultDamageSources());
     }
 /*

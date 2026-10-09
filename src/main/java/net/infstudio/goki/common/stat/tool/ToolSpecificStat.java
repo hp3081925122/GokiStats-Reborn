@@ -6,7 +6,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 public abstract class ToolSpecificStat extends StatBase<StatConfig> {
     public ToolSpecificStat(int id, String key, int limit) {
@@ -16,7 +16,7 @@ public abstract class ToolSpecificStat extends StatBase<StatConfig> {
     public abstract TagKey<Item> getTag();
 
     @Override
-    public StatConfig createConfig(ForgeConfigSpec.Builder builder) {
+    public StatConfig createConfig(ModConfigSpec.Builder builder) {
         return new StatConfig(builder);
     }
 

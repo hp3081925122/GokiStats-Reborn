@@ -3,10 +3,10 @@ package net.infstudio.goki.client;
 import net.infstudio.goki.client.gui.GuiStats;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.client.event.InputEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 
 @OnlyIn(Dist.CLIENT)
 public class GokiKeyHandler {

@@ -5,7 +5,7 @@ import net.infstudio.goki.common.config.stats.StatConfig;
 import net.infstudio.goki.common.config.stats.TreasureFinderConfig;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class StatTreasureFinder extends StatBase<StatConfig> {
     public StatTreasureFinder(int id, String key, int limit) {
@@ -21,7 +21,7 @@ public class StatTreasureFinder extends StatBase<StatConfig> {
     }
 
     @Override
-    public TreasureFinderConfig createConfig(ForgeConfigSpec.Builder builder) {
+    public TreasureFinderConfig createConfig(ModConfigSpec.Builder builder) {
         return new TreasureFinderConfig(builder);
     }
 

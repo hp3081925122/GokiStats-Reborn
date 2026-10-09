@@ -1,16 +1,16 @@
 package net.infstudio.goki.common.config;
 
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * GokiStats mod config, in Forge config specification
  */
 public class GokiConfig {
-    public static final ForgeConfigSpec serverSpec;
+    public static final ModConfigSpec serverSpec;
     public static final Server SERVER;
     static {
-        final Pair<Server, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(Server::new);
+        final Pair<Server, ModConfigSpec> specPair = new ModConfigSpec.Builder().configure(Server::new);
         serverSpec = specPair.getRight();
         SERVER = specPair.getLeft();
     }
@@ -18,17 +18,17 @@ public class GokiConfig {
     public static class Server {
         public static boolean initiativeSync = false;
 
-        public final ForgeConfigSpec.IntValue syncTicks;
-        public final ForgeConfigSpec.DoubleValue globalCostMultiplier;
-        public final ForgeConfigSpec.DoubleValue globalLimitMultiplier;
-        public final ForgeConfigSpec.DoubleValue globalBonusMultiplier;
-        public final ForgeConfigSpec.BooleanValue loseStatsOnDeath;
-        public final ForgeConfigSpec.DoubleValue loseStatsMultiplier;
-        public final ForgeConfigSpec.IntValue globalMaxRevertLevel;
-        public final ForgeConfigSpec.DoubleValue globalRevertFactor;
-        public final ForgeConfigSpec.IntValue reaperLimit;
+        public final ModConfigSpec.IntValue syncTicks;
+        public final ModConfigSpec.DoubleValue globalCostMultiplier;
+        public final ModConfigSpec.DoubleValue globalLimitMultiplier;
+        public final ModConfigSpec.DoubleValue globalBonusMultiplier;
+        public final ModConfigSpec.BooleanValue loseStatsOnDeath;
+        public final ModConfigSpec.DoubleValue loseStatsMultiplier;
+        public final ModConfigSpec.IntValue globalMaxRevertLevel;
+        public final ModConfigSpec.DoubleValue globalRevertFactor;
+        public final ModConfigSpec.IntValue reaperLimit;
 
-        public Server(ForgeConfigSpec.Builder builder) {
+        public Server(ModConfigSpec.Builder builder) {
             builder.comment("服务端配置 / Server configuration settings")
                     .push("server");
 

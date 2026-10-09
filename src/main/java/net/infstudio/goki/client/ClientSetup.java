@@ -1,16 +1,17 @@
 package net.infstudio.goki.client;
 
 import net.infstudio.goki.common.utils.Reference;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 
 @OnlyIn(Dist.CLIENT)
-@Mod.EventBusSubscriber(value = Dist.CLIENT, modid = Reference.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(value = Dist.CLIENT, modid = Reference.MODID, bus = EventBusSubscriber.Bus.MOD)
 public class ClientSetup {
     @SubscribeEvent
     public static void registerKeys(RegisterKeyMappingsEvent event) {
@@ -19,6 +20,6 @@ public class ClientSetup {
 
     @SubscribeEvent
     public static void setup(FMLClientSetupEvent event) {
-        MinecraftForge.EVENT_BUS.register(new GokiKeyHandler());
+        NeoForge.EVENT_BUS.register(new GokiKeyHandler());
     }
 }

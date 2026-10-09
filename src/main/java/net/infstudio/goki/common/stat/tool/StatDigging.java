@@ -7,7 +7,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.*;
 
 public class StatDigging extends ToolSpecificStat {
-    private static final TagKey<Item> TAG = ItemTags.create(new ResourceLocation(Reference.MODID, "digging"));
+    private static final TagKey<Item> TAG = ItemTags.create(ResourceLocation.fromNamespaceAndPath(Reference.MODID, "digging"));
 
     public StatDigging(int id, String key, int limit) {
         super(id, key, limit);

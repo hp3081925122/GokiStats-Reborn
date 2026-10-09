@@ -1,5 +1,6 @@
 package net.infstudio.goki.client.gui;
 
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.infstudio.goki.GokiStats;
 import net.infstudio.goki.api.stat.StatBase;
 import net.infstudio.goki.common.network.GokiPacketHandler;
@@ -80,7 +81,7 @@ public class GuiStats extends Screen {
         }
         GokiStats.log.debug("Stats screen layout: skills={}, columns={}, rows={}, scale={}, cellWidth={}, screen={}x{}", count, columns, rows, scale, cellWidth, width, height);
         if (!requestedSync) {
-            GokiPacketHandler.CHANNEL.sendToServer(new C2SRequestStatSync());
+            PacketDistributor.sendToServer(new C2SRequestStatSync());
             requestedSync = true;
         }
     }
@@ -88,7 +89,7 @@ public class GuiStats extends Screen {
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         if (heldButton != null && !heldButton.isUnderMouse(mouseX, mouseY)) stopHolding();
-        renderBackground(graphics);
+        renderTransparentBackground(graphics);
         drawFittedText(graphics, title.getString(), Math.max(5, gridTop - 20), 0xFFFFFFFF);
         super.render(graphics, mouseX, mouseY, partialTick);
         drawFittedText(graphics, I18n.get("ui.gokistats_reborn.menu_hint"), height - 28, 0xFFCCCCCC);
@@ -197,6 +198,6 @@ public class GuiStats extends Screen {
 
     protected void actionPerformed(Button button) {
         if (button instanceof GuiStatButton statButton && statButton.id >= 0 && statButton.id < StatBase.stats.size())
-            GokiPacketHandler.CHANNEL.sendToServer(new C2SStatSync(statButton.id, hasControlDown() ? -1 : 1));
+            PacketDistributor.sendToServer(new C2SStatSync(statButton.id, hasControlDown() ? -1 : 1));
     }
 }

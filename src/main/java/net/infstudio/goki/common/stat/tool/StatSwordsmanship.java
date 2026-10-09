@@ -7,7 +7,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 
 public class StatSwordsmanship extends ToolSpecificStat {
-    private static final TagKey<Item> TAG = ItemTags.create(new ResourceLocation(Reference.MODID, "sword"));
+    private static final TagKey<Item> TAG = ItemTags.create(ResourceLocation.fromNamespaceAndPath(Reference.MODID, "sword"));
 
     public StatSwordsmanship(int id, String key, int limit) {
         super(id, key, limit);

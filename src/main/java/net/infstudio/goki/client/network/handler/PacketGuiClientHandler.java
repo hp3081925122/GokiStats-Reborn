@@ -3,21 +3,19 @@ package net.infstudio.goki.client.network.handler;
 import net.infstudio.goki.client.gui.GuiStats;
 import net.infstudio.goki.common.network.message.S2COpenGui;
 import net.minecraft.client.Minecraft;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.function.Supplier;
 
 public class PacketGuiClientHandler {
-    public static void acceptOpenGui(S2COpenGui message, Supplier<NetworkEvent.Context> context) {
-        context.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> openGuiInternal(context.get())));
-        context.get().setPacketHandled(true);
+    public static void acceptOpenGui(S2COpenGui message, IPayloadContext context) {
+        context.enqueueWork(() -> openGuiInternal(context));
     }
 
     @OnlyIn(Dist.CLIENT)
-    public static void openGuiInternal(NetworkEvent.Context context) {
+    public static void openGuiInternal(IPayloadContext context) {
         Minecraft.getInstance().setScreen(new GuiStats());
     }
 }

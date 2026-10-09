@@ -4,84 +4,53 @@ import net.infstudio.goki.api.stat.StatBase;
 import net.infstudio.goki.api.stat.StatState;
 import net.infstudio.goki.api.stat.StatStorage;
 import net.infstudio.goki.common.utils.Reference;
-import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.common.capabilities.*;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.attachment.AttachmentType;
+import net.neoforged.neoforge.attachment.IAttachmentHolder;
+import net.neoforged.neoforge.attachment.IAttachmentSerializer;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import java.util.function.Supplier;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-@Mod.EventBusSubscriber(modid = Reference.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class CapabilityStat {
-    public static Capability<StatStorage> STAT = CapabilityManager.get(new CapabilityToken<>(){});
-
-    private static CompoundTag serializeNBT(StatStorage statStorage) {
-        var compound = new CompoundTag();
-        statStorage.stateMap.forEach((stat, state) -> {
-            var stateTag = new CompoundTag();
-            stateTag.putInt("level", state.level);
-            stateTag.putInt("revertedLevel", state.revertedLevel);
-            compound.put(stat.getRegistryName().toString(), stateTag);
-        });
-        return compound;
-    }
-
-    private static void deserializeNBT(@Nonnull StatStorage statStorage, Tag nbt) {
-        if (nbt instanceof CompoundTag) {
-            var compound = (CompoundTag) nbt;
-            for (var stat : compound.getAllKeys()) {
-                var statLocation = ResourceLocation.tryParse(stat);
-                if (statLocation == null) continue;
-                if (statLocation.getNamespace().equals(Reference.LEGACY_MODID)) {
-                    statLocation = new ResourceLocation(Reference.MODID, statLocation.getPath());
+    private static final DeferredRegister<AttachmentType<?>> TYPES = DeferredRegister.create(NeoForgeRegistries.Keys.ATTACHMENT_TYPES, Reference.MODID);
+    public static final Supplier<AttachmentType<StatStorage>> STAT = TYPES.register("stat_storage", () -> AttachmentType.builder(StatStorage::new)
+            .serialize(new IAttachmentSerializer<CompoundTag, StatStorage>() {
+                public StatStorage read(IAttachmentHolder holder, CompoundTag tag, HolderLookup.Provider provider) {
+                    return deserializeNBT(tag);
                 }
-                if (!StatBase.REGISTRY.containsKey(statLocation)) continue;
-                var stateTag = compound.getCompound(stat);
-                var statObject = StatBase.REGISTRY.getValue(statLocation);
-                statStorage.stateMap.put(statObject, new StatState(statObject, stateTag.getInt("level"), stateTag.getInt("revertedLevel")));
-            }
-        }
+                public CompoundTag write(StatStorage storage, HolderLookup.Provider provider) {
+                    return serializeNBT(storage);
+                }
+            }).build());
+
+    public static void register(IEventBus bus) { TYPES.register(bus); }
+
+    public static CompoundTag serializeNBT(StatStorage storage) {
+        var result = new CompoundTag();
+        storage.stateMap.forEach((stat, state) -> {
+            var tag = new CompoundTag();
+            tag.putInt("level", state.level);
+            tag.putInt("revertedLevel", state.revertedLevel);
+            result.put(stat.getRegistryName().toString(), tag);
+        });
+        return result;
     }
 
-    public static class Provider implements ICapabilitySerializable<CompoundTag> {
-        public StatStorage statStorage = new StatStorage();
-        public LazyOptional<StatStorage> storageProperty = LazyOptional.of(() -> statStorage);
-
-        @Override
-        @Nonnull
-        public <T> LazyOptional<T> getCapability(@Nonnull final Capability<T> cap, final @Nullable Direction side) {
-            if (cap == STAT) {
-                if (storageProperty == null) storageProperty = LazyOptional.of(() -> statStorage);
-                return storageProperty.cast();
-            }
-            else return LazyOptional.empty();
+    public static StatStorage deserializeNBT(CompoundTag nbt) {
+        var storage = new StatStorage();
+        for (var key : nbt.getAllKeys()) {
+            var id = ResourceLocation.tryParse(key);
+            if (id == null) continue;
+            if (id.getNamespace().equals(Reference.LEGACY_MODID)) id = ResourceLocation.fromNamespaceAndPath(Reference.MODID, id.getPath());
+            var stat = StatBase.REGISTRY.get(id);
+            if (stat == null) continue;
+            var tag = nbt.getCompound(key);
+            storage.stateMap.put(stat, new StatState(stat, tag.getInt("level"), tag.getInt("revertedLevel")));
         }
-
-        public void invalidate() {
-            var previous = storageProperty;
-            storageProperty = null;
-            if (previous != null) previous.invalidate();
-        }
-
-        @Override
-        public CompoundTag serializeNBT() {
-            return CapabilityStat.serializeNBT(statStorage);
-        }
-
-
-        @Override
-        public void deserializeNBT(CompoundTag nbt) {
-            CapabilityStat.deserializeNBT(statStorage, nbt);
-        }
-    }
-
-    @SubscribeEvent
-    public static void register(RegisterCapabilitiesEvent event) {
-        event.register(StatStorage.class);
+        return storage;
     }
 }

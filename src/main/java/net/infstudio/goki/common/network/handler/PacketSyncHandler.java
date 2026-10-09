@@ -10,16 +10,16 @@ import net.infstudio.goki.common.network.message.C2SStatSync;
 import net.infstudio.goki.common.network.message.S2CStatSync;
 import net.infstudio.goki.common.network.message.S2CSyncAll;
 import net.infstudio.goki.common.utils.DataHelper;
-import net.minecraftforge.network.NetworkEvent;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.function.Supplier;
 
 public class PacketSyncHandler {
-    public static void acceptC2S(C2SStatSync message, Supplier<NetworkEvent.Context> context) {
-        var ctx = context.get();
+    public static void acceptC2S(C2SStatSync message, IPayloadContext context) {
+        var ctx = context;
         ctx.enqueueWork(() -> {
-            var player = ctx.getSender();
+            var player = ctx.player() instanceof net.minecraft.server.level.ServerPlayer serverPlayer ? serverPlayer : null;
             if (player == null || message.stat < 0 || message.stat >= StatBase.stats.size()
                     || (message.amount != 1 && message.amount != -1)) {
                 GokiStats.log.debug("Rejected invalid skill request: stat={}, amount={}", message.stat, message.amount);
@@ -44,20 +44,18 @@ public class PacketSyncHandler {
             }
             if (stat == Stats.MAX_HEALTH) DataHelper.resetMaxHealth(player);
             GokiStats.log.debug("Updated skill {} to level {} (reverted={})", stat.getRegistryName(), level + message.amount, reverted);
-            GokiPacketHandler.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player),
+            PacketDistributor.sendToPlayer(player,
                     new S2CStatSync(message.stat, level + message.amount, reverted));
         });
-        ctx.setPacketHandled(true);
     }
 
-    public static void onRequestSyncAll(C2SRequestStatSync message, Supplier<NetworkEvent.Context> context) {
-        var ctx = context.get();
+    public static void onRequestSyncAll(C2SRequestStatSync message, IPayloadContext context) {
+        var ctx = context;
         ctx.enqueueWork(() -> {
-            var player = ctx.getSender();
+            var player = ctx.player() instanceof net.minecraft.server.level.ServerPlayer serverPlayer ? serverPlayer : null;
             if (player != null) {
-                GokiPacketHandler.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new S2CSyncAll(player));
+                PacketDistributor.sendToPlayer(player, new S2CSyncAll(player));
             }
         });
-        ctx.setPacketHandled(true);
     }
 }

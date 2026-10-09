@@ -1,6 +1,6 @@
 package net.infstudio.goki.common.config.stats;
 
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +10,7 @@ public class MiningMagicianConfig extends StatConfig {
     public List<String> itemEntries = new ArrayList<>();
 
 
-    public MiningMagicianConfig(ForgeConfigSpec.Builder builder) {
+    public MiningMagicianConfig(ModConfigSpec.Builder builder) {
         super(builder);
     }
 }
