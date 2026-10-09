@@ -1,5 +1,6 @@
 package net.infstudio.goki.client.gui;
 
+import net.infstudio.goki.GokiStats;
 import net.minecraft.client.gui.GuiGraphics;
 import net.infstudio.goki.api.stat.StatBase;
 import net.infstudio.goki.common.config.GokiConfig;
@@ -14,6 +15,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class GuiStatTooltip {
+    private static boolean renderLayerLogged;
     private StatBase stat;
     private Player player;
     private int padding = 4;
@@ -78,18 +80,34 @@ public class GuiStatTooltip {
         if (right > rightEdge) {
             x += rightEdge - right - 1;
         }
-        stack.fill(x, drawY, x + width, drawY - height, -872415232);
+        stack.flush();
+        stack.pose().pushPose();
+        stack.pose().translate(0, 0, 400);
+        try {
+            stack.fill(x, drawY, x + width, drawY - height, -872415232);
+            drawBorder(stack, x, drawY, width, height, -1);
+            stack.flush();
 
-        for (int i = messageColorMap.size(); i >= 1; i--) {
-            Map.Entry<String, Integer> entry = messageColorMap.entrySet().toArray(new Map.Entry[0])[messageColorMap.size() - i];
-            stack.drawString(this.mc.font,
-                    entry.getKey(),
-                    x + this.padding / 2,
-                    drawY - h * i + this.padding / 2,
-                    entry.getValue());
+            for (int i = messageColorMap.size(); i >= 1; i--) {
+                Map.Entry<String, Integer> entry = messageColorMap.entrySet().toArray(new Map.Entry[0])[messageColorMap.size() - i];
+                stack.drawString(this.mc.font,
+                        entry.getKey(),
+                        x + this.padding / 2,
+                        drawY - h * i + this.padding / 2,
+                        entry.getValue());
+            }
+
+            if (!renderLayerLogged) {
+                GokiStats.log.debug("Rendering skill tooltip on overlay layer: z=400, width={}, height={}, base batch flushed", width, height);
+                renderLayerLogged = true;
+            }
+        } finally {
+            try {
+                stack.flush();
+            } finally {
+                stack.pose().popPose();
+            }
         }
-
-        drawBorder(stack, x, drawY, width, height, -1);
     }
 
     private void drawBorder(GuiGraphics stack, int x, int y, int width, int height, int borderColor) {
