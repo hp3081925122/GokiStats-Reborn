@@ -1,0 +1,35 @@
+{
+    "critical" : {
+        "category": "master",
+        "sounds": [
+          {"name": "gokistats_reborn:critical1"},
+          {"name": "gokistats_reborn:critical2"},
+          {"name": "gokistats_reborn:critical3"},
+          {"name": "gokistats_reborn:critical4"}
+        ]
+    },
+	"magician" : {
+        "category": "blocks",
+        "sounds": [
+          {"name": "gokistats_reborn:magician1"},
+          {"name": "gokistats_reborn:magician2"},
+          {"name": "gokistats_reborn:magician3"}
+        ]
+    },
+	"reaper" : {
+        "category": "master",
+        "sounds": [
+          {"name": "gokistats_reborn:reaper1"},
+          {"name": "gokistats_reborn:reaper2"},
+          {"name": "gokistats_reborn:reaper3"}
+        ]
+    },
+	"treasure" : {
+        "category": "blocks",
+        "sounds": [
+          {"name": "gokistats_reborn:treasure1"},
+          {"name": "gokistats_reborn:treasure2"},
+          {"name": "gokistats_reborn:treasure3"}
+        ]
+    }
+}

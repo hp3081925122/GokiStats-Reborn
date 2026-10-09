@@ -1,4 +1,4 @@
-# GokiStats — Minecraft 1.20.1 Forge 非官方迁移版
+# GokiStats Reborn — Minecraft 1.20.1 Forge 非官方迁移版
 
 工程位置：`E:\模组\发cf的模组\GokiStats\1201 forge GokiStats`。
 
@@ -7,9 +7,9 @@
 - Minecraft：1.20.1。
 - Forge：47.4.23。
 - Java：17；Gradle Wrapper：8.8。
-- 模组 ID：`gokistats`；迁移版本：`1.4.0-port.1`。
+- 模组 ID：`gokistats_reborn`；迁移版本：`1.4.0-port.1`。
 - 默认按键：Y；按住 Ctrl 点击技能可退还一级。
-- 管理员命令：`/gokistats gui`，`/gokistats gui <玩家>`。
+- 管理员命令：`/gokistats_reborn gui`，`/gokistats_reborn gui <玩家>`；旧 `/gokistats` 保留为别名。
 - 原版 `/gokistats reload` 未实现热重载；迁移版显示 Forge 配置管理提示，配置更改后重启世界。
 
 ## 构建
@@ -34,9 +34,17 @@ $env:JAVA_HOME = 'C:\Users\30819\.jdks\ms-17.0.18'
 配置禁用技能后停止相应效果；潜行和格挡状态下升级的加成可更新。
 服务端测试进一步修正能力注册事件总线、死亡复制时能力恢复，以及攀爬额外水平位移。
 
+## 改名与旧技能数据
+
+本项目名称为 GokiStats Reborn，模组 ID、网络通道、技能注册及资源命名空间为 `gokistats_reborn`。
+玩家技能存储外层键保留 `gokistats:stat_storage`，读取时将旧 `gokistats:<技能>` 映射为新技能；后续保存写入新技能 ID。
+服务端配置文件继续使用 `gokistats-server.toml` 与原有 `stat_*.toml`，已有数值不因改名而重置。旧存档键和配置文件名属于有意保留的兼容标识。
+替换旧版 JAR 后使用，不能同时装入原版与本迁移版。已有数据包或整合脚本若引用旧资源 ID，需自行更新为新命名空间。
+本轮只验证技能 NBT 格式读取兼容，未验证直接迁移完整 1.18.1 世界。
+
 ## 验证边界
 
-已完成编译、正式重混淆构建、静态资源检查，以及 Forge 47.4.23 GameTest 服务端中的 24 组功能检查，结果全部通过。
+已完成编译、正式重混淆构建、静态资源检查，以及 Forge 47.4.23 GameTest 服务端中的 26 组功能检查，结果全部通过。
 测试覆盖模拟玩家的升级退还、存档 NBT、死亡与末地返回、属性和战斗事件、实际方块掉落、同步包发送与两名模拟玩家的数据隔离。测试环境与正式工程使用相同的 69 个 Java 源文件。
 尚未启动真实客户端联机；界面、客户端实际收包、移动手感、跨服务器重启后的真人登录和 1.18.1 存档迁移仍待验证。GameTest 源码运行结果也不代替正式重混淆 JAR 在独立生产服务端的装载测试。具体结果见 SERVER-TEST-REPORT.md，手工补测项目见 TESTING.md。
 元数据按目录约定未设置最高版本，但开发和构建目标仅为 Minecraft 1.20.1 Forge，不代表已兼容其他版本。

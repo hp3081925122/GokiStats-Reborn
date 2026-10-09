@@ -35,7 +35,11 @@ public class CapabilityStat {
         if (nbt instanceof CompoundTag) {
             var compound = (CompoundTag) nbt;
             for (var stat : compound.getAllKeys()) {
-                var statLocation = new ResourceLocation(stat);
+                var statLocation = ResourceLocation.tryParse(stat);
+                if (statLocation == null) continue;
+                if (statLocation.getNamespace().equals(Reference.LEGACY_MODID)) {
+                    statLocation = new ResourceLocation(Reference.MODID, statLocation.getPath());
+                }
                 if (!StatBase.REGISTRY.containsKey(statLocation)) continue;
                 var stateTag = compound.getCompound(stat);
                 var statObject = StatBase.REGISTRY.getValue(statLocation);

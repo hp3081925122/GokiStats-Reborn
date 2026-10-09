@@ -5,8 +5,8 @@
       "bonus_rolls": 0.0,
       "conditions": [
         {
-          "condition": "gokistats:stat_level",
-          "stat": "gokistats:mining_magician",
+          "condition": "gokistats_reborn:stat_level",
+          "stat": "gokistats_reborn:mining_magician",
           "minLevel": 1
         }
       ],

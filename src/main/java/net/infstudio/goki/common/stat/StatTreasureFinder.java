@@ -15,9 +15,9 @@ public class StatTreasureFinder extends StatBase<StatConfig> {
     @Override
     public String getLocalizedDescription(Player player) {
         if (getPlayerStatLevel(player) == 0) {
-            return I18n.get("skill.gokistats." + this.key + ".text");
+            return I18n.get("skill.gokistats_reborn." + this.key + ".text");
         }
-        return I18n.get("skill.gokistats." + this.key + ".upgrade");
+        return I18n.get("skill.gokistats_reborn." + this.key + ".upgrade");
     }
 
     @Override

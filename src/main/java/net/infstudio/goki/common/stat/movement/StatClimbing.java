@@ -18,9 +18,9 @@ public class StatClimbing extends StatBase<StatConfig> {
     @Override
     public String getLocalizedDescription(Player player) {
         if (Reference.isPlayerAPILoaded) {
-            return I18n.get("skill.gokistats." + this.key + ".disabled");
+            return I18n.get("skill.gokistats_reborn." + this.key + ".disabled");
         }
-        return I18n.get("skill.gokistats." + this.key + ".text",
+        return I18n.get("skill.gokistats_reborn." + this.key + ".text",
                 this.getDescriptionFormatArguments(player)[0]);
     }
 }

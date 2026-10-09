@@ -33,7 +33,7 @@ public class GokiStats {
         try {
             Class.forName(Stats.class.getName());
         } catch (ClassNotFoundException e) {
-            throw new IllegalStateException("Cannot initialize GokiStats skills", e);
+            throw new IllegalStateException("Cannot initialize GokiStats Reborn skills", e);
         }
         eventBus.addListener(this::createRegistry);
         eventBus.addListener(this::registerStats);
@@ -42,7 +42,7 @@ public class GokiStats {
         GokiPacketHandler.registerMessages();
         MinecraftForge.EVENT_BUS.register(new TickHandler());
         initConfig();
-        log.info("GokiStats unofficial Forge 1.20.1 port initialized with {} skills", StatBase.stats.size());
+        log.info("GokiStats Reborn unofficial Forge 1.20.1 port initialized with {} skills", StatBase.stats.size());
     }
 
     private void createRegistry(NewRegistryEvent event) {
@@ -58,7 +58,7 @@ public class GokiStats {
     }
 
     public void initConfig() {
-        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, GokiConfig.serverSpec);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, GokiConfig.serverSpec, Reference.LEGACY_MODID + "-server.toml");
         for (StatBase<?> stat : StatBase.stats) {
             ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, stat.configSpec, "stat_" + stat.getRegistryName().getPath() + ".toml");
         }

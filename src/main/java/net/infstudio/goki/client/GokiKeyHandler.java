@@ -10,7 +10,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 @OnlyIn(Dist.CLIENT)
 public class GokiKeyHandler {
-    public static final KeyMapping statsMenu = new KeyMapping("ui.openmenu", 89, "key.categories.gokistats");
+    public static final KeyMapping statsMenu = new KeyMapping("ui.openmenu", 89, "key.categories.gokistats_reborn");
 
     @SubscribeEvent
     public void keyDown(InputEvent.Key event) {

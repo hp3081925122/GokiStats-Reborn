@@ -30,7 +30,7 @@ public class CommonHandler {
     public static void injectCapability(AttachCapabilitiesEvent<Entity> event) {
         if (event.getObject() instanceof Player) {
             var provider = new CapabilityStat.Provider();
-            event.addCapability(new ResourceLocation(Reference.MODID, "stat_storage"), provider);
+            event.addCapability(Reference.STORAGE_ID, provider);
             event.addListener(provider::invalidate);
         }
     }
@@ -136,7 +136,7 @@ public class CommonHandler {
                     );
 
                     victim.addTag("knockback");
-//                    player.sendMessage(new TranslationTextComponent("skill.gokistats.roll.message"));
+//                    player.sendMessage(new TranslationTextComponent("skill.gokistats_reborn.roll.message"));
 
                     return;
                 }

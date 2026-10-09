@@ -15,10 +15,10 @@ import net.minecraftforge.network.PacketDistributor;
 public class StatsCommand {
     @SubscribeEvent
     public static void register(RegisterCommandsEvent event) {
-        event.getDispatcher().register(Commands.literal("gokistats")
+        var command = event.getDispatcher().register(Commands.literal(Reference.MODID)
                 .requires(source -> source.hasPermission(2))
                 .then(Commands.literal("reload").executes(context -> {
-                    context.getSource().sendFailure(Component.translatable("commands.gokistats.reload.unavailable"));
+                    context.getSource().sendFailure(Component.translatable("commands.gokistats_reborn.reload.unavailable"));
                     return 0;
                 }))
                 .then(Commands.literal("gui")
@@ -32,5 +32,7 @@ public class StatsCommand {
                             GokiPacketHandler.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new S2COpenGui());
                             return 1;
                         }))));
+        event.getDispatcher().register(Commands.literal(Reference.LEGACY_MODID)
+                .requires(source -> source.hasPermission(2)).redirect(command));
     }
 }

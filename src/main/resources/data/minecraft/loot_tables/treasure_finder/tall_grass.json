@@ -18,8 +18,8 @@
       ],
       "conditions": [
         {
-          "condition": "gokistats:stat_level",
-          "stat": "gokistats:treasure_finder",
+          "condition": "gokistats_reborn:stat_level",
+          "stat": "gokistats_reborn:treasure_finder",
           "minLevel": 1
         },
         {

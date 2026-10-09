@@ -121,12 +121,12 @@ public abstract class StatBase<T extends StatConfig> implements Stat, Configurab
 
     @OnlyIn(Dist.CLIENT)
     public String getLocalizedName() {
-        return I18n.get("skill.gokistats." + this.key);
+        return I18n.get("skill.gokistats_reborn." + this.key);
     }
 
     @OnlyIn(Dist.CLIENT)
     public String getLocalizedDescription(Player player) {
-        return I18n.get("skill.gokistats." + this.key + ".text",
+        return I18n.get("skill.gokistats_reborn." + this.key + ".text",
                 this.getDescriptionFormatArguments(player)[0]);
     }
 

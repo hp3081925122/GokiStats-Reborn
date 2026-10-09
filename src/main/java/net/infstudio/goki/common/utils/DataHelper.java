@@ -62,7 +62,7 @@ public class DataHelper {
         if (previous != null && Double.compare(previous.getAmount(), bonus) == 0) return;
         attribute.removeModifier(MAX_HEALTH_MODIFIER);
         if (bonus != 0) {
-            attribute.addTransientModifier(new AttributeModifier(MAX_HEALTH_MODIFIER, "GokiStatsHealth", bonus, AttributeModifier.Operation.ADDITION));
+            attribute.addTransientModifier(new AttributeModifier(MAX_HEALTH_MODIFIER, "GokiStatsRebornHealth", bonus, AttributeModifier.Operation.ADDITION));
         }
         if (player.getHealth() > player.getMaxHealth()) player.setHealth(player.getMaxHealth());
     }

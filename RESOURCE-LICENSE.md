@@ -11,4 +11,4 @@ https://creativecommons.org/licenses/by-nc-sa/4.0/
 完整法律文本：https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
 
 资源包括上游贴图、图标、音效及其他资源文件。保留作者署名和许可链接，注明修改，并遵守非商业与相同方式共享条件。
-迁移日期：2026-10-09。资源包格式及版本相关数据由 hp3081925122 适配；原贴图与音效未修改。
+迁移日期：2026-10-09。资源包格式及版本相关数据由 hp3081925122 适配；资源命名空间调整为 gokistats_reborn，原贴图与音效内容未修改。

@@ -68,6 +68,11 @@ dependencies {
 }
 
 tasks.named('processResources', ProcessResources).configure {
+    // 用 UTF-8 读取元数据，避免 Properties 默认编码损坏中文。
+    def modMetadata = new Properties()
+    file('gradle.properties').withReader('UTF-8') { modMetadata.load(it) }
+    filteringCharset = 'UTF-8'
+    inputs.file('gradle.properties')
     def replaceProperties = [
             minecraft_version: project.minecraft_version,
             minecraft_version_range: project.minecraft_version_range,
@@ -75,11 +80,11 @@ tasks.named('processResources', ProcessResources).configure {
             forge_version_range: project.forge_version_range,
             loader_version_range: project.loader_version_range,
             mod_id: project.mod_id,
-            mod_name: project.mod_name,
+            mod_name: modMetadata.getProperty('mod_name'),
             mod_license: project.mod_license,
             mod_version: project.mod_version,
-            mod_authors: project.mod_authors,
-            mod_description: project.mod_description
+            mod_authors: modMetadata.getProperty('mod_authors'),
+            mod_description: modMetadata.getProperty('mod_description')
     ]
     inputs.properties replaceProperties
 

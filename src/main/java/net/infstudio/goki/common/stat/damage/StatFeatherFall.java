@@ -29,7 +29,7 @@ public class StatFeatherFall extends DamageSourceProtectionStat {
 
     @Override
     public String getLocalizedDescription(Player player) {
-        return I18n.get("skill.gokistats." + this.key + ".text",
+        return I18n.get("skill.gokistats_reborn." + this.key + ".text",
                 this.getDescriptionFormatArguments(player)[0],
                 this.getDescriptionFormatArguments(player)[1]);
     }
