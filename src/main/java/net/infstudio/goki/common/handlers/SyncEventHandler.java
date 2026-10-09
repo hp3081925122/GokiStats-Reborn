@@ -12,25 +12,25 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
 
-@Mod.EventBusSubscriber(modid = Reference.MODID, value = Dist.DEDICATED_SERVER)
+@Mod.EventBusSubscriber(modid = Reference.MODID)
 public class SyncEventHandler {
     public static void syncPlayerData(Player player) {
+        if (!(player instanceof ServerPlayer)) return;
         DataHelper.resetMaxHealth(player);
         GokiPacketHandler.CHANNEL.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), new S2CSyncAll(player));
     }
 
     @SubscribeEvent
     public static void playerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
-        syncPlayerData(event.getPlayer());
+        syncPlayerData(event.getEntity());
     }
 
     @SubscribeEvent
     public static void playerChangedWorld(PlayerEvent.PlayerChangedDimensionEvent event) {
-        syncPlayerData(event.getPlayer());
+        syncPlayerData(event.getEntity());
     }
 
-    @SubscribeEvent
     public static void playerRespawn(PlayerEvent.PlayerRespawnEvent event) {
-        syncPlayerData(event.getPlayer());
+        syncPlayerData(event.getEntity());
     }
 }

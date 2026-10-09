@@ -2,7 +2,7 @@ package net.infstudio.goki.common.stat.tool;
 
 import net.infstudio.goki.api.stat.StatBase;
 import net.infstudio.goki.common.config.stats.StatConfig;
-import net.minecraft.tags.Tag;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -13,7 +13,7 @@ public abstract class ToolSpecificStat extends StatBase<StatConfig> {
         super(id, key, limit);
     }
 
-    public abstract Tag<Item> getTag();
+    public abstract TagKey<Item> getTag();
 
     @Override
     public StatConfig createConfig(ForgeConfigSpec.Builder builder) {

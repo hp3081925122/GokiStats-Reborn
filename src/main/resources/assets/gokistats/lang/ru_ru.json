@@ -22,7 +22,6 @@
   "skill.gokistats.mining_magician": "Удачливый шахтер",
   "skill.gokistats.roll": "Перекат",
   "skill.gokistats.health": "Дополнительное здоровье",
-
   "skill.gokistats.mining.text": "Добывайте на %f%% быстрее.",
   "skill.gokistats.digging.text": "Копайте на %f%% быстрее.",
   "skill.gokistats.chopping.text": "Рубите на %f%% быстрее.",
@@ -49,10 +48,8 @@
   "skill.gokistats.mining_magician.text": "Шанс найти дополнительные ресурсы при добыче руд.",
   "skill.gokistats.roll.text": "%f%% Шанс на то, чтобы избежать урона и контратаковать противника при получении ударов.",
   "skill.gokistats.health.text": "Имейте на %f больше единиц здоровья.",
-
   "skill.gokistats.roll.message": "*Увернулся*",
   "skill.gokistats.roll.knockback": "*Отбрасывание*",
-
   "ui.cost": "Стоит %.2fxp",
   "ui.return": "Вернется %.2fxp",
   "ui.max": "Максимальный уровень!",
@@ -63,5 +60,7 @@
   "ui.revert": "Нажми, чтобы откатить",
   "ui.reverted": "Откаченные уровни: %d/%s",
   "ui.infinite": "Неограниченно",
-  "ui.norevert": "Вы не можете больше откатывать!"
+  "ui.norevert": "Вы не можете больше откатывать!",
+  "key.categories.gokistats": "GokiStats",
+  "commands.gokistats.reload.unavailable": "Skill configuration is managed by Forge. Restart the world to apply changes."
 }

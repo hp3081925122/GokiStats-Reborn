@@ -22,9 +22,9 @@ import static net.infstudio.goki.common.utils.Reference.MODID;
 
 @Mod.EventBusSubscriber(modid = MODID)
 public class TickHandler {
-    public static final UUID knockbackResistanceID = UUID.randomUUID();
-    public static final UUID stealthSpeedID = UUID.randomUUID();
-    public static final UUID swimSpeedID = UUID.randomUUID();
+    public static final UUID knockbackResistanceID = UUID.fromString("824d15a0-8a36-4fe8-a702-9fed51dd0b7a");
+    public static final UUID stealthSpeedID = UUID.fromString("7074741e-8f96-49f3-b67c-4f6b49e0c51b");
+    public static final UUID swimSpeedID = UUID.fromString("c080a374-72e4-4b4a-bcd0-b47e2a019ea7");
 
     public static AtomicInteger tickTimer = new AtomicInteger();
 
@@ -39,7 +39,9 @@ public class TickHandler {
             if (attributeInstance == null) return;
             var modifier = new AttributeModifier(stealthSpeedID, "SneakSpeed", Stats.STEALTH.getBonus(player) / 100.0F, AttributeModifier.Operation.fromValue(1));
             if (player.isCrouching()) {
-                if (attributeInstance.getModifier(stealthSpeedID) == null) {
+                var existing = attributeInstance.getModifier(stealthSpeedID);
+                if (existing == null || Double.compare(existing.getAmount(), modifier.getAmount()) != 0) {
+                    attributeInstance.removeModifier(stealthSpeedID);
                     attributeInstance.addTransientModifier(modifier);
                 }
             } else if (attributeInstance.getModifier(stealthSpeedID) != null) {
@@ -50,7 +52,9 @@ public class TickHandler {
             if (attributeInstance == null) return;
             modifier = new AttributeModifier(knockbackResistanceID, "KnockbackResistance", Stats.STEADY_GUARD.getBonus(player), AttributeModifier.Operation.fromValue(0));
             if (player.isBlocking()) {
-                if (attributeInstance.getModifier(knockbackResistanceID) == null) {
+                var existing = attributeInstance.getModifier(knockbackResistanceID);
+                if (existing == null || Double.compare(existing.getAmount(), modifier.getAmount()) != 0) {
+                    attributeInstance.removeModifier(knockbackResistanceID);
                     attributeInstance.addTransientModifier(modifier);
                 }
             } else if (attributeInstance.getModifier(knockbackResistanceID) != null) {
@@ -60,7 +64,6 @@ public class TickHandler {
     }
 
     @SubscribeEvent
-    @OnlyIn(Dist.DEDICATED_SERVER)
     public void serverTick(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.END && GokiConfig.SERVER.syncTicks.get() > 0) {
             if (tickTimer.get() == GokiConfig.SERVER.syncTicks.get()) {

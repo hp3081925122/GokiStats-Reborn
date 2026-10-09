@@ -7,7 +7,9 @@ import net.infstudio.goki.api.stat.Stat;
 import net.infstudio.goki.api.stat.StatBase;
 import net.infstudio.goki.common.utils.DataHelper;
 import net.infstudio.goki.common.utils.Reference;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.RegistryObject;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -20,18 +22,19 @@ import java.util.Objects;
 
 public record StatLootCondition(Stat stat, int minLevel) implements LootItemCondition {
     @Nonnull
-    public static final LootItemConditionType STAT_LOOT_CONDITION = Registry.register(Registry.LOOT_CONDITION_TYPE, new ResourceLocation(Reference.MODID, "stat_level"), new LootItemConditionType(new StatLootCondition.Serializer()));
+    public static final DeferredRegister<LootItemConditionType> CONDITIONS = DeferredRegister.create(Registries.LOOT_CONDITION_TYPE, Reference.MODID);
+    public static final RegistryObject<LootItemConditionType> STAT_LOOT_CONDITION = CONDITIONS.register("stat_level", () -> new LootItemConditionType(new StatLootCondition.Serializer()));
 
     @Nonnull
     @Override
     public LootItemConditionType getType() {
-        return STAT_LOOT_CONDITION;
+        return STAT_LOOT_CONDITION.get();
     }
 
     @Override
     public boolean test(LootContext lootContext) {
         if (lootContext.getParamOrNull(LootContextParams.THIS_ENTITY) instanceof Player player) {
-            return DataHelper.getPlayerStatLevel(player, stat) >= minLevel;
+            return stat != null && DataHelper.getPlayerStatLevel(player, stat) >= minLevel;
         }
 
         return false;

@@ -1,45 +1,28 @@
 package net.infstudio.goki.common.init;
 
+import com.mojang.serialization.Codec;
 import net.infstudio.goki.common.handlers.GokiLootModifier;
 import net.infstudio.goki.common.utils.Reference;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraftforge.common.loot.GlobalLootModifierSerializer;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ObjectHolder;
+import net.minecraftforge.common.loot.IGlobalLootModifier;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
 
-import javax.annotation.Nonnull;
-
-import static net.infstudio.goki.common.utils.Reference.MODID;
-
-@SuppressWarnings("ConstantConditions")
-@ObjectHolder(MODID)
-@Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class GokiSounds {
-    @Nonnull
-    public static final SoundEvent TREASURE = null;
+    private static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, Reference.MODID);
+    private static final DeferredRegister<Codec<? extends IGlobalLootModifier>> MODIFIERS = DeferredRegister.create(ForgeRegistries.Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS, Reference.MODID);
+    public static final SoundEvent TREASURE = SoundEvent.createVariableRangeEvent(new ResourceLocation(Reference.MODID, "treasure"));
+    public static final SoundEvent MAGICIAN = SoundEvent.createVariableRangeEvent(new ResourceLocation(Reference.MODID, "magician"));
+    public static final SoundEvent REAPER = SoundEvent.createVariableRangeEvent(new ResourceLocation(Reference.MODID, "reaper"));
 
-    @Nonnull
-    public static final SoundEvent MAGICIAN = null;
-
-    @Nonnull
-    public static final SoundEvent REAPER = null;
-
-    @SubscribeEvent
-    public static void registerSounds(@Nonnull final RegistryEvent.Register<SoundEvent> event) {
-        event.getRegistry().registerAll(
-                new SoundEvent(new ResourceLocation(MODID, "treasure")).setRegistryName(MODID, "treasure"),
-                new SoundEvent(new ResourceLocation(MODID, "magician")).setRegistryName(MODID, "magician"),
-                new SoundEvent(new ResourceLocation(MODID, "reaper")).setRegistryName(MODID, "reaper")
-        );
-    }
-
-    @SubscribeEvent
-    public static void registerModifierSerializers(@Nonnull final RegistryEvent.Register<GlobalLootModifierSerializer<?>> event) {
-        event.getRegistry().register(
-                new GokiLootModifier.Serializer().setRegistryName(Reference.MODID, "loot")
-        );
+    public static void register(IEventBus eventBus) {
+        SOUNDS.register("treasure", () -> TREASURE);
+        SOUNDS.register("magician", () -> MAGICIAN);
+        SOUNDS.register("reaper", () -> REAPER);
+        MODIFIERS.register("loot", () -> GokiLootModifier.CODEC);
+        SOUNDS.register(eventBus);
+        MODIFIERS.register(eventBus);
     }
 }

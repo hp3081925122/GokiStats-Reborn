@@ -1,14 +1,14 @@
 package net.infstudio.goki.client.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 import net.infstudio.goki.api.stat.StatBase;
 import net.infstudio.goki.common.utils.DataHelper;
 import net.infstudio.goki.common.utils.Reference;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 
 public class GuiStatButton extends Button {
@@ -25,14 +25,14 @@ public class GuiStatButton extends Button {
 
 
     public GuiStatButton(int id, int x, int y, int width, int height, StatBase stat, Player player, OnPress onPress) {
-        super(x, y, width, height, TextComponent.EMPTY, onPress);
+        super(x, y, width, height, Component.empty(), onPress, DEFAULT_NARRATION);
         this.id = id;
         this.stat = stat;
         this.player = player;
     }
 
     @Override
-    public void renderButton(PoseStack stack, int mouseX, int mouseY, float partialTicks) {
+    public void renderWidget(GuiGraphics stack, int mouseX, int mouseY, float partialTicks) {
         if (this.visible) {
             int iconY = 24 * (this.stat.imageID % 10);
             int level = DataHelper.getPlayerStatLevel(this.player, this.stat);
@@ -76,21 +76,21 @@ public class GuiStatButton extends Button {
             iconX += this.stat.imageID % 20 / 10 * 24 * 4;
 
 
-            stack.pushPose();
-            stack.translate(this.x, this.y, 0);
-            stack.scale(GuiStats.SCALE, GuiStats.SCALE, 0);
+            stack.pose().pushPose();
+            stack.pose().translate(this.getX(), this.getY(), 0);
+            stack.pose().scale(GuiStats.SCALE, GuiStats.SCALE, 1);
             bindTexture();
-            blit(stack, 0, 0, iconX, iconY, this.width, this.height);
+            stack.blit(this.stat.imageID >= 20 ? Reference.RPG_ICON_2_TEXTURE_LOCATION : Reference.RPG_ICON_TEXTURE_LOCATION, 0, 0, iconX, iconY, this.width, this.height);
 
-            stack.popPose();
-            stack.pushPose();
-            stack.translate(this.x, this.y, 0);
-            drawCenteredString(stack, fontrenderer,
+            stack.pose().popPose();
+            stack.pose().pushPose();
+            stack.pose().translate(this.getX(), this.getY(), 0);
+            stack.drawCenteredString(fontrenderer,
                     message,
                     (int) (this.width / 2 * GuiStats.SCALE),
                     (int) (this.height * GuiStats.SCALE) + 2,
                     messageColor);
-            stack.popPose();
+            stack.pose().popPose();
         }
     }
 
@@ -103,7 +103,7 @@ public class GuiStatButton extends Button {
     }
 
     public boolean isUnderMouse(int mouseX, int mouseY) {
-        return (mouseX >= this.x) && (mouseY >= this.y) && (mouseX < this.x + this.width * GuiStats.SCALE) && (mouseY < this.y + this.height * GuiStats.SCALE);
+        return (mouseX >= this.getX()) && (mouseY >= this.getY()) && (mouseX < this.getX() + this.width * GuiStats.SCALE) && (mouseY < this.getY() + this.height * GuiStats.SCALE);
     }
 
     @Override
@@ -113,7 +113,7 @@ public class GuiStatButton extends Button {
 
     //    @Override
     public boolean mousePressed(Minecraft par1Minecraft, int mouseX, int mouseY) {
-        return (this.active) && (this.visible) && (mouseX >= this.x) && (mouseY >= this.y) && (mouseX < this.x + this.width * GuiStats.SCALE) && (mouseY < this.y + this.height * GuiStats.SCALE);
+        return (this.active) && (this.visible) && (mouseX >= this.getX()) && (mouseY >= this.getY()) && (mouseX < this.getX() + this.width * GuiStats.SCALE) && (mouseY < this.getY() + this.height * GuiStats.SCALE);
     }
 
     public String getHoverMessage(int which) {

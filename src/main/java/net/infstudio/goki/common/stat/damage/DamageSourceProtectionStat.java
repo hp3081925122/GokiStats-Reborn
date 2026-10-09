@@ -15,7 +15,7 @@ public abstract class DamageSourceProtectionStat extends StatBase<DamageSourcePr
 
     @Override
     public DamageSourceProtectionConfig createConfig(ForgeConfigSpec.Builder builder) {
-        return new DamageSourceProtectionConfig(builder);
+        return new DamageSourceProtectionConfig(builder, getDefaultDamageSources());
     }
 /*
     @Override
@@ -37,8 +37,8 @@ public abstract class DamageSourceProtectionStat extends StatBase<DamageSourcePr
         if (obj != null) {
             if ((obj[0] instanceof DamageSource)) {
                 DamageSource source = (DamageSource) obj[0];
-                for (String damageSource : config.damageSources) {
-                    if (source.msgId.equals(damageSource)) {
+                for (String damageSource : config.damageSources.get()) {
+                    if (source.getMsgId().equals(damageSource)) {
                         return true;
                     }
                 }

@@ -4,9 +4,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.registries.IForgeRegistryEntry;
+import net.minecraft.resources.ResourceLocation;
 
-public interface Stat extends IForgeRegistryEntry<Stat> {
+public interface Stat {
+    ResourceLocation getRegistryName();
     /**
      * Return if this stat is effective on the specified objects
      * @param obj in-world objects, like ItemStack, Entity, etc

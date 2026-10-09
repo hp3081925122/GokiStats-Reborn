@@ -12,8 +12,8 @@ public class TreasureFinderEntry {
     public int chance;
 
     public TreasureFinderEntry(Block block, Item item, int minimumLevel, int chance) {
-        this.block = block.getRegistryName().toString();
-        this.item = item.getRegistryName().toString();
+        this.block = ForgeRegistries.BLOCKS.getKey(block).toString();
+        this.item = ForgeRegistries.ITEMS.getKey(item).toString();
         this.minimumLevel = minimumLevel;
         this.chance = chance;
     }

@@ -17,19 +17,17 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.registries.ForgeRegistryEntry;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegistryBuilder;
 
 import java.util.Objects;
 
-public abstract class StatBase<T extends StatConfig> extends ForgeRegistryEntry<Stat> implements Stat, Configurable<T> {
-    public static final IForgeRegistry<Stat> REGISTRY = new RegistryBuilder<Stat>()
-            .setName(new ResourceLocation(Reference.MODID, "stats"))
-            .setType(Stat.class)
-            .create();
+public abstract class StatBase<T extends StatConfig> implements Stat, Configurable<T> {
+    public static final ResourceLocation REGISTRY_NAME = new ResourceLocation(Reference.MODID, "stats");
+    public static IForgeRegistry<Stat> REGISTRY;
+    private final ResourceLocation registryName;
     public static final ObjectList<StatBase<?>> stats = new ObjectArrayList<>(16);
-    public static LazyOptional<Integer> totalStats = LazyOptional.of(() -> REGISTRY.getValues().size());
+    public static LazyOptional<Integer> totalStats = LazyOptional.of(() -> stats.size());
     public int imageID;
     public String key;
 
@@ -50,8 +48,12 @@ public abstract class StatBase<T extends StatConfig> extends ForgeRegistryEntry<
         configSpec = specPair.getRight();
         config = specPair.getLeft();
 
-        setRegistryName(Reference.MODID, key.toLowerCase());
-        REGISTRY.register(this);
+        registryName = new ResourceLocation(Reference.MODID, key.toLowerCase(java.util.Locale.ROOT));
+    }
+
+    @Override
+    public ResourceLocation getRegistryName() {
+        return registryName;
     }
 
     protected float getFinalBonus(float currentBonus) {
@@ -61,14 +63,14 @@ public abstract class StatBase<T extends StatConfig> extends ForgeRegistryEntry<
     @Override
     @SuppressWarnings("unchecked")
     public T createConfig(ForgeConfigSpec.Builder builder) {
-        builder.comment("Server configuration settings")
+        builder.comment("服务端配置 / Server configuration settings")
                 .push("stats." + key);
         return (T) new StatConfig(builder);
     }
 
     @Override
     public double getBonus(Player player) {
-        return getBonus(DataHelper.getPlayerStatLevel(player, this)) * getBonusMultiplier();
+        return isEnabled() ? getBonus(DataHelper.getPlayerStatLevel(player, this)) : 0;
     }
 
     @Override
@@ -114,9 +116,7 @@ public abstract class StatBase<T extends StatConfig> extends ForgeRegistryEntry<
     }
 
     public final boolean isEffectiveOn(ItemStack stack, BlockPos pos, Level world) {
-        if (stack.isCorrectToolForDrops(world.getBlockState(pos)))
-            return true;
-        else return isEffectiveOn(stack);
+        return isEffectiveOn(stack);
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -150,7 +150,7 @@ public abstract class StatBase<T extends StatConfig> extends ForgeRegistryEntry<
 
     @Override
     public boolean isEnabled() {
-        return getLimit() != 0 && enabled;
+        return config.maxLevel.get() != 0 && getLimit() != 0 && enabled;
     }
 
     public void setEnabled(boolean enabled) {

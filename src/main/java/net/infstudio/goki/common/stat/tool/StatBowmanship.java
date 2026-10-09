@@ -4,17 +4,17 @@ package net.infstudio.goki.common.stat.tool;
 import net.infstudio.goki.common.utils.Reference;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.tags.Tag;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 
 public class StatBowmanship extends ToolSpecificStat {
-    private static final Tag<Item> TAG = ItemTags.createOptional(new ResourceLocation(Reference.MODID, "bow"));
+    private static final TagKey<Item> TAG = ItemTags.create(new ResourceLocation(Reference.MODID, "bow"));
 
     public StatBowmanship(int id, String key, int limit) {
         super(id, key, limit);
     }
 
-    public Tag<Item> getTag() {
+    public TagKey<Item> getTag() {
         return TAG;
     }
 

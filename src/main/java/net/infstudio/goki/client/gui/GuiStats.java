@@ -1,6 +1,6 @@
 package net.infstudio.goki.client.gui;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 import net.infstudio.goki.api.stat.StatBase;
 import net.infstudio.goki.common.network.GokiPacketHandler;
 import net.infstudio.goki.common.network.message.C2SRequestStatSync;
@@ -11,7 +11,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec2;
 
@@ -43,7 +43,7 @@ public class GuiStats extends Screen {
 
 
     public GuiStats() {
-        super(new TextComponent(""));
+        super(Component.literal(""));
     }
 
     /**
@@ -55,7 +55,7 @@ public class GuiStats extends Screen {
     }
 
     @Override
-    public void render(@Nonnull PoseStack stack, int mouseX, int mouseY, float par3) {
+    public void render(@Nonnull GuiGraphics stack, int mouseX, int mouseY, float par3) {
         var toolTipX = 0;
         var toolTipY = 0;
         this.toolTip = null;
@@ -64,14 +64,14 @@ public class GuiStats extends Screen {
         for (var i = 0; i < this.renderables.size(); i++) {
             if ((this.renderables.get(i) instanceof GuiStatButton button)) {
                 if (button.isUnderMouse(mouseX, mouseY)) {
-                    this.toolTip = new GuiStatTooltip(StatBase.stats.get(i), this.player);
-                    toolTipX = button.x + 12;
-                    toolTipY = button.y - 1;
+                    this.toolTip = new GuiStatTooltip(button.stat, this.player);
+                    toolTipX = button.getX() + 12;
+                    toolTipY = button.getY() - 1;
                     break;
                 }
             }
         }
-        drawCenteredString(stack, fontRenderer,
+        stack.drawCenteredString(fontRenderer,
                 I18n.get("ui.currentxp", DataHelper.getXPTotal(player)),
                 width / 2,
                 this.height - 16,
@@ -84,7 +84,9 @@ public class GuiStats extends Screen {
     @SuppressWarnings("unchecked")
     @Override
     public void init() {
-        // Sync the stat
+        this.currentColumn = 0;
+        this.currentRow = 0;
+        // 同步技能数据
         GokiPacketHandler.CHANNEL.sendToServer(new C2SRequestStatSync());
         for (var stat = 0; stat < StatBase.totalStats.orElse(0); stat++) {
             var pos = getButton(stat);
@@ -102,7 +104,7 @@ public class GuiStats extends Screen {
 
     private Vec2 getButton(int n) {
         var columns = COLUMNS[this.currentRow];
-        var x = n % columns;
+        var x = this.currentColumn;
         var y = this.currentRow;
         var rows = COLUMNS.length;
         var width = columns * 32 * SCALE;

@@ -22,7 +22,6 @@
   "skill.gokistats.mining_magician": "Mining Magician",
   "skill.gokistats.roll": "Roll",
   "skill.gokistats.health": "Additional Health",
-
   "skill.gokistats.mining.text": "Mine %f%% faster.",
   "skill.gokistats.digging.text": "Dig %f%% faster.",
   "skill.gokistats.chopping.text": "Chop %f%% faster.",
@@ -43,19 +42,15 @@
   "skill.gokistats.reaper.text": "%1$f%% chance to instantly kill enemies with less than %2$f health;",
   "skill.gokistats.treasure_finder.text": "Chance to find additional items when harvesting blocks.",
   "skill.gokistats.treasure_finder.upgrade": "Chance to find more rare additional items when harvesting blocks.",
-  "skill.gokistats.treasure_finder.disabled": "Requires Additional Events to be installed",
   "skill.gokistats.furnace_finesse.text": "Smelt %1$f ticks faster %2$f%% of the time while using a furnace.",
   "skill.gokistats.furnace_finesse.disabled": "Disabled due to huge performance leak",
   "skill.gokistats.steady_guard.text": "%f%% less knockback when blocking.",
   "skill.gokistats.stealth.text": "Move %1$f%% faster and reap %2$f%%more often (%3$f%%) when sneaking.;",
   "skill.gokistats.mining_magician.text": "Chance to find additional materials when harvesting ores.",
-  "skill.gokistats.mining_magician.disabled": "Requires Additional Events to be installed",
   "skill.gokistats.roll.text": "%f%% chance to avoid damage and counterattack enemy.",
   "skill.gokistats.health.text": "Get %f more health.",
-
   "skill.gokistats.roll.message": "*Avoided*",
   "skill.gokistats.roll.knockback": "*Knockback*",
-
   "ui.cost": "Cost %.2fxp",
   "ui.return": "Return %.2fxp",
   "ui.max": "Max!",
@@ -66,5 +61,9 @@
   "ui.revert": "Click to downgrade",
   "ui.reverted": "Downgraded levels: %d/%s",
   "ui.infinite": "Infinite",
-  "ui.norevert": "You cannot downgrade anymore!"
+  "ui.norevert": "You cannot downgrade anymore!",
+  "key.categories.gokistats": "GokiStats",
+  "commands.gokistats.reload.unavailable": "Skill configuration is managed by Forge. Restart the world to apply changes.",
+  "skill.gokistats.treasure_finder.disabled": "Requires Additional Events to be installed",
+  "skill.gokistats.mining_magician.disabled": "Requires Additional Events to be installed"
 }

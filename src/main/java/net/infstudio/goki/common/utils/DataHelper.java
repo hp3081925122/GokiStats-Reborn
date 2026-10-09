@@ -2,7 +2,8 @@ package net.infstudio.goki.common.utils;
 
 import net.infstudio.goki.api.capability.CapabilityStat;
 import net.infstudio.goki.api.stat.Stat;
-import net.infstudio.goki.api.stat.StatStorage;
+import net.infstudio.goki.api.stat.StatState;
+import java.util.UUID;
 import net.infstudio.goki.api.stat.Stats;
 import net.infstudio.goki.common.config.GokiConfig;
 import net.minecraft.world.damagesource.DamageSource;
@@ -19,27 +20,34 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import java.util.function.IntFunction;
 
 public class DataHelper {
+    public static final UUID MAX_HEALTH_MODIFIER = UUID.fromString("caea9f48-05a6-42c7-b381-4a1799c7350f");
+
+    private static StatState getState(Player player, Stat stat) {
+        return player.getCapability(CapabilityStat.STAT).resolve()
+                .map(storage -> storage.stateMap.computeIfAbsent(stat, key -> new StatState(key, 0, 0)))
+                .orElseGet(() -> new StatState(stat, 0, 0));
+    }
     public static boolean canPlayerRevertStat(Player player, Stat stat) {
-        return GokiConfig.SERVER.globalMaxRevertLevel.get() == -1 ||
+        return getPlayerStatLevel(player, stat) > 0 && (GokiConfig.SERVER.globalMaxRevertLevel.get() == -1 ||
                 (GokiConfig.SERVER.globalMaxRevertLevel.get() >= 0
                         && getPlayerRevertStatLevel(player, stat) < GokiConfig.SERVER.globalMaxRevertLevel.get()
-                        && getPlayerStatLevel(player, stat) > 0);
+                        && getPlayerStatLevel(player, stat) > 0));
     }
 
     public static int getPlayerRevertStatLevel(Player player, Stat stat) {
-        return player.getCapability(CapabilityStat.STAT).orElse(new StatStorage()).stateMap.get(stat).revertedLevel;
+        return getState(player, stat).revertedLevel;
     }
 
     public static void setPlayerRevertStatLevel(Player player, Stat stat, int level) {
-        player.getCapability(CapabilityStat.STAT).orElse(new StatStorage()).stateMap.get(stat).revertedLevel = level;
+        getState(player, stat).revertedLevel = level;
     }
 
     public static int getPlayerStatLevel(Player player, Stat stat) {
-        return player.getCapability(CapabilityStat.STAT).orElse(new StatStorage()).stateMap.get(stat).level;
+        return getState(player, stat).level;
     }
 
     public static void setPlayerStatLevel(Player player, Stat stat, int level) {
-        player.getCapability(CapabilityStat.STAT).orElse(new StatStorage()).stateMap.get(stat).level = level;
+        getState(player, stat).level = level;
     }
 
     public static void multiplyPlayerStatLevel(Player player, Stat stat, IntFunction<Integer> multiplier) {
@@ -48,9 +56,15 @@ public class DataHelper {
 
     public static void addMaxHealth(Player player, int amount) {
         var attribute = player.getAttribute(Attributes.MAX_HEALTH);
-        attribute.setBaseValue(20 + amount);
-        attribute.removeModifiers();
-        attribute.addPermanentModifier(new AttributeModifier("MaxHealth", DataHelper.getPlayerStatLevel(player, Stats.MAX_HEALTH), AttributeModifier.Operation.ADDITION));
+        if (attribute == null) return;
+        double bonus = Stats.MAX_HEALTH.isEnabled() ? Stats.MAX_HEALTH.getBonus(amount) : 0;
+        var previous = attribute.getModifier(MAX_HEALTH_MODIFIER);
+        if (previous != null && Double.compare(previous.getAmount(), bonus) == 0) return;
+        attribute.removeModifier(MAX_HEALTH_MODIFIER);
+        if (bonus != 0) {
+            attribute.addTransientModifier(new AttributeModifier(MAX_HEALTH_MODIFIER, "GokiStatsHealth", bonus, AttributeModifier.Operation.ADDITION));
+        }
+        if (player.getHealth() > player.getMaxHealth()) player.setHealth(player.getMaxHealth());
     }
 
     public static void resetMaxHealth(Player player) {
@@ -74,7 +88,7 @@ public class DataHelper {
         } else if (level > 30) {
             xp = (int) Math.round(((4.5 * Math.pow(level, 2) - 162.5 * level + 2220)));
         }
-        return xp;
+        return xp + Math.round(player.experienceProgress * player.getXpNeededForNextLevel());
     }
 
     public static boolean hasDamageModifier(ItemStack stack) {
@@ -92,7 +106,7 @@ public class DataHelper {
             bonusDamage += EnchantmentHelper.getDamageBonus(stack, ((LivingEntity) target).getMobType());
         }
         if ((damage > 0.0F) || (bonusDamage > 0.0F)) {
-            critical = (player.fallDistance > 0.0F) && (!player.isOnGround()) && (!player.onClimbable()) && (!player.isInWater()) && (!player.hasEffect(MobEffects.BLINDNESS)) && (player.getVehicle() == null) && (targetIsLiving);
+            critical = (player.fallDistance > 0.0F) && (!player.onGround()) && (!player.onClimbable()) && (!player.isInWater()) && (!player.hasEffect(MobEffects.BLINDNESS)) && (player.getVehicle() == null) && (targetIsLiving);
             if ((critical) && (damage > 0.0F)) {
                 damage *= 1.5F;
             }

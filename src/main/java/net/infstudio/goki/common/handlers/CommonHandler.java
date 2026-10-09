@@ -22,15 +22,17 @@ import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ObjectHolder;
+import net.minecraft.tags.DamageTypeTags;
 
-@ObjectHolder(Reference.MODID)
 @Mod.EventBusSubscriber(modid = Reference.MODID)
 public class CommonHandler {
     @SubscribeEvent
     public static void injectCapability(AttachCapabilitiesEvent<Entity> event) {
-        if (event.getObject() instanceof Player)
-            event.addCapability(new ResourceLocation(Reference.MODID, "stat_storage"), new CapabilityStat.Provider());
+        if (event.getObject() instanceof Player) {
+            var provider = new CapabilityStat.Provider();
+            event.addCapability(new ResourceLocation(Reference.MODID, "stat_storage"), provider);
+            event.addListener(provider.storageProperty::invalidate);
+        }
     }
 
     @SubscribeEvent
@@ -39,7 +41,7 @@ public class CommonHandler {
             var player = (Player) event.getEntity();
             var featherFallLevel = DataHelper.getPlayerStatLevel(player,
                     Stats.STAT_FEATHER_FALL);
-            if (event.getDistance() < 3.0D + featherFallLevel * 0.1D) {
+            if (Stats.STAT_FEATHER_FALL.isEnabled() && event.getDistance() < 3.0D + featherFallLevel * 0.1D) {
                 event.setDistance(0.0F);
             }
         }
@@ -51,16 +53,20 @@ public class CommonHandler {
      */
     @SubscribeEvent
     public static void onPlayerClone(PlayerEvent.Clone event) {
-        event.getOriginal().revive();
-        event.getPlayer().getCapability(CapabilityStat.STAT).orElse(new StatStorage()).stateMap = event.getOriginal().getCapability(CapabilityStat.STAT).orElse(new StatStorage()).stateMap;
+        event.getOriginal().reviveCaps();
+        event.getOriginal().getCapability(CapabilityStat.STAT).ifPresent(original ->
+                event.getEntity().getCapability(CapabilityStat.STAT).ifPresent(copy -> {
+                    original.stateMap.forEach((stat, state) -> copy.stateMap.put(stat,
+                            new net.infstudio.goki.api.stat.StatState(stat, state.level, state.revertedLevel)));
+                }));
         event.getOriginal().invalidateCaps();
     }
 
     @SubscribeEvent
     public static void playerRespawn(PlayerEvent.PlayerRespawnEvent event) {
-        var player = event.getPlayer();
-        if (!player.level.isClientSide()) {
-            if (GokiConfig.SERVER.loseStatsOnDeath.get()) {
+        var player = event.getEntity();
+        if (!player.level().isClientSide()) {
+            if (!event.isEndConquered() && GokiConfig.SERVER.loseStatsOnDeath.get()) {
                 for (var stat = 0; stat < StatBase.totalStats.orElse(0); stat++) {
                     DataHelper.multiplyPlayerStatLevel(player,
                             StatBase.stats.get(stat),
@@ -74,29 +80,29 @@ public class CommonHandler {
 
     @SubscribeEvent
     public static void playerBreakSpeed(PlayerEvent.BreakSpeed event) {
-        var heldItem = event.getPlayer().getMainHandItem();
-        var player = event.getPlayer();
+        var heldItem = event.getEntity().getMainHandItem();
+        var player = event.getEntity();
 
         double multiplier = 1.0F;
 
         if (Stats.MINING.isEffectiveOn(heldItem,
-                event.getPos(),
-                player.level)) {
+                event.getPosition().orElse(player.blockPosition()),
+                player.level())) {
             multiplier += Stats.MINING.getBonus(player);
         }
         if (Stats.DIGGING.isEffectiveOn(heldItem,
-                event.getPos(),
-                player.level)) {
+                event.getPosition().orElse(player.blockPosition()),
+                player.level())) {
             multiplier += Stats.DIGGING.getBonus(player);
         }
         if (Stats.CHOPPING.isEffectiveOn(heldItem,
-                event.getPos(),
-                player.level)) {
+                event.getPosition().orElse(player.blockPosition()),
+                player.level())) {
             multiplier += Stats.CHOPPING.getBonus(player);
         }
         if (Stats.TRIMMING.isEffectiveOn(heldItem,
-                event.getPos(),
-                player.level)) {
+                event.getPosition().orElse(player.blockPosition()),
+                player.level())) {
             multiplier += Stats.TRIMMING.getBonus(player);
         }
 
@@ -105,9 +111,9 @@ public class CommonHandler {
 
     @SubscribeEvent
     public static void playerJump(LivingEvent.LivingJumpEvent event) {
-        if (event.getEntityLiving() instanceof Player player) {
+        if (event.getEntity() instanceof Player player) {
             if (player.isSprinting()) {
-                player.setDeltaMovement(player.getDeltaMovement().multiply(1.0 + Stats.LEAPER_V.getBonus(player), 1.0 + Stats.LEAPER_H.getBonus(player), 1.0 + Stats.LEAPER_H.getBonus(player)));
+                player.setDeltaMovement(player.getDeltaMovement().multiply(1.0 + Stats.LEAPER_H.getBonus(player), 1.0 + Stats.LEAPER_V.getBonus(player), 1.0 + Stats.LEAPER_H.getBonus(player)));
             }
         }
     }
@@ -116,11 +122,11 @@ public class CommonHandler {
     public static void entityHurt(LivingHurtEvent event) {
         var source = event.getSource();
 
-        var victim = event.getEntityLiving();
+        var victim = event.getEntity();
 
         if (victim instanceof Player player) {
-            if (!source.isFire() && !source.isBypassMagic()) {
-                if (player.level.random.nextFloat() >= 1.0f - Stats.ROLL.getBonus(player)) {
+            if (!source.is(DamageTypeTags.IS_FIRE) && !source.is(DamageTypeTags.BYPASSES_EFFECTS)) {
+                if (player.level().random.nextFloat() >= 1.0f - Stats.ROLL.getBonus(player)) {
                     // Avoid damage
                     event.setCanceled(true);
 
@@ -141,7 +147,7 @@ public class CommonHandler {
                     source) + Stats.TEMPERING.getAppliedBonus(player,
                     source));
 
-            event.setAmount((float) (event.getAmount() * damageMultiplier));
+            event.setAmount((float) (event.getAmount() * Math.max(0, damageMultiplier)));
         }
 
         Entity src = source.getEntity();
@@ -159,11 +165,11 @@ public class CommonHandler {
                 } else {
                     if (!DataHelper.hasDamageModifier(heldItem))
                         // This is not a item providing damage, apply pugilism
-                        bonus = Math.round(damage + Stats.PUGILISM.getBonus(player));
+                        bonus = Math.round(Stats.PUGILISM.getBonus(player));
                 }
             } else {
 //				bonus = Math.round(damage + (StatBase.PUGILISM.getBonus(DataHelper.getPlayerStatLevel(	player, StatBase.PUGILISM))));
-                bonus = Math.round(damage + Stats.PUGILISM.getBonus(player));
+                bonus = Math.round(Stats.PUGILISM.getBonus(player));
             }
             event.setAmount(bonus + damage);
 
@@ -175,7 +181,7 @@ public class CommonHandler {
                 double reapChance = reap + reapBonus;
                 if (player.getRandom().nextFloat() <= reapChance) {
                     player.crit(victim);
-                    player.level.playSound(player, event.getEntity().blockPosition(), GokiSounds.REAPER, SoundSource.MASTER, 1.0f, 1.0f);
+                    player.level().playSound(player, event.getEntity().blockPosition(), GokiSounds.REAPER, SoundSource.MASTER, 1.0f, 1.0f);
                     event.setAmount(100000.0F);
                 }
             }

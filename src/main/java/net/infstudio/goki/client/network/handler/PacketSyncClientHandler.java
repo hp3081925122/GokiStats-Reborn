@@ -32,12 +32,11 @@ public class PacketSyncClientHandler {
         var player = Minecraft.getInstance().player;
         if (player == null)
             return;
+        if (message.stat < 0 || message.stat >= StatBase.stats.size()) return;
         var stat = StatBase.stats.get(message.stat);
-        if (stat == Stats.MAX_HEALTH)
-            player.getAttribute(Attributes.MAX_HEALTH)
-                    .setBaseValue(20 + message.amount);
         DataHelper.setPlayerRevertStatLevel(player, stat, message.reverted);
         DataHelper.setPlayerStatLevel(player, stat, message.amount);
+        if (stat == Stats.MAX_HEALTH) DataHelper.resetMaxHealth(player);
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -45,15 +44,14 @@ public class PacketSyncClientHandler {
         var player = Minecraft.getInstance().player;
         if (player == null)
             return;
-        for (var i = 0; i < message.statLevels.length; i++) {
+        for (var i = 0; i < Math.min(message.statLevels.length, StatBase.stats.size()); i++) {
             DataHelper.setPlayerStatLevel(player,
                     StatBase.stats.get(i),
                     message.statLevels[i]);
         }
-        for (var i = 0; i < message.revertedStatLevels.length; i++) {
+        for (var i = 0; i < Math.min(message.revertedStatLevels.length, StatBase.stats.size()); i++) {
             DataHelper.setPlayerRevertStatLevel(player, StatBase.stats.get(i), message.revertedStatLevels[i]);
         }
-        player.getAttribute(Attributes.MAX_HEALTH)
-                .setBaseValue(20 + DataHelper.getPlayerStatLevel(player, Stats.MAX_HEALTH));
+        DataHelper.resetMaxHealth(player);
     }
 }

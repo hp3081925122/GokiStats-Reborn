@@ -7,14 +7,14 @@ import net.infstudio.goki.common.utils.Reference;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.tags.Tag;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 
 public class StatMiningMagician extends StatBase<StatConfig> {
-    public static final Tag<Block> MAGICIAN_ORE = BlockTags.createOptional(new ResourceLocation(Reference.MODID, "magician_ore"));
-    public static final Tag<Item> MAGICIAN_ITEM = ItemTags.createOptional(new ResourceLocation(Reference.MODID, "magician_item"));
+    public static final TagKey<Block> MAGICIAN_ORE = BlockTags.create(new ResourceLocation(Reference.MODID, "magician_ore"));
+    public static final TagKey<Item> MAGICIAN_ITEM = ItemTags.create(new ResourceLocation(Reference.MODID, "magician_item"));
 
     public StatMiningMagician(int id, String key, int limit) {
         super(id, key, limit);
@@ -33,7 +33,7 @@ public class StatMiningMagician extends StatBase<StatConfig> {
 
     @Override
     public boolean isEffectiveOn(Object... obj) {
-        if (obj[0] instanceof Block block) return MAGICIAN_ORE.contains(block);
+        if (obj[0] instanceof Block block) return block.defaultBlockState().is(MAGICIAN_ORE);
         return false;
         // return super.needAffectedByStat(obj[0]);
     }
