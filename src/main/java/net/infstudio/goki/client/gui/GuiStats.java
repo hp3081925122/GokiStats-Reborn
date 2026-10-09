@@ -1,128 +1,113 @@
 package net.infstudio.goki.client.gui;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.infstudio.goki.GokiStats;
 import net.infstudio.goki.api.stat.StatBase;
 import net.infstudio.goki.common.network.GokiPacketHandler;
 import net.infstudio.goki.common.network.message.C2SRequestStatSync;
 import net.infstudio.goki.common.network.message.C2SStatSync;
 import net.infstudio.goki.common.utils.DataHelper;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.Vec2;
 
-import javax.annotation.Nonnull;
-
-/**
- * Stats ui, where player upgrade/downgrade their skills
- */
 public class GuiStats extends Screen {
     public static final int STATUS_BUTTON_WIDTH = 24;
     public static final int STATUS_BUTTON_HEIGHT = 24;
-    // private static final int HORIZONTAL_SPACING = 8;
-    // private static final int VERTICAL_SPACING = 12;
     public static final int IMAGE_ROWS = 10;
-    private static final int[] COLUMNS =
-            {4, 4, 5, 4, 5, 4};
-    public static float SCALE = 1.0F;
-
+    private static final int MARGIN = 10;
+    private static final int HEADER_HEIGHT = 28;
+    private static final int FOOTER_HEIGHT = 36;
+    private static final int MAX_COLUMNS = 7;
     private final Player player = Minecraft.getInstance().player;
-    private final Font fontRenderer = Minecraft.getInstance().font;
-
-    private int currentColumn = 0;
-    private int currentRow = 0;
-
-    /**
-     * Tooltip for the skill under mouse hover
-     */
-    private GuiStatTooltip toolTip = null;
-
+    private boolean requestedSync;
+    private int gridTop;
 
     public GuiStats() {
-        super(Component.literal(""));
+        super(Component.translatable("ui.gokistats_reborn.menu_title"));
     }
 
-    /**
-     * Should the screen pauses Singleplayer game
-     */
     @Override
     public boolean isPauseScreen() {
         return false;
     }
 
     @Override
-    public void render(@Nonnull GuiGraphics stack, int mouseX, int mouseY, float par3) {
-        var toolTipX = 0;
-        var toolTipY = 0;
-        this.toolTip = null;
-        renderBackground(stack);
-        super.render(stack, mouseX, mouseY, par3);
-        for (var i = 0; i < this.renderables.size(); i++) {
-            if ((this.renderables.get(i) instanceof GuiStatButton button)) {
-                if (button.isUnderMouse(mouseX, mouseY)) {
-                    this.toolTip = new GuiStatTooltip(button.stat, this.player);
-                    toolTipX = button.getX() + 12;
-                    toolTipY = button.getY() - 1;
-                    break;
-                }
-            }
-        }
-        stack.drawCenteredString(fontRenderer,
-                I18n.get("ui.currentxp", DataHelper.getXPTotal(player)),
-                width / 2,
-                this.height - 16,
-                0xFFFFFFFF);
-
-        if (this.toolTip != null)
-            this.toolTip.render(stack, toolTipX, toolTipY, 0);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
     public void init() {
-        this.currentColumn = 0;
-        this.currentRow = 0;
-        // 同步技能数据
-        GokiPacketHandler.CHANNEL.sendToServer(new C2SRequestStatSync());
-        for (var stat = 0; stat < StatBase.totalStats.orElse(0); stat++) {
-            var pos = getButton(stat);
-            addRenderableWidget(new GuiStatButton(stat, (int) pos.x, (int) pos.y, 24, 24, StatBase.stats.get(stat), this.player, this::actionPerformed));
-            this.currentColumn += 1;
-            if (this.currentColumn >= COLUMNS[this.currentRow]) {
-                this.currentRow += 1;
-                this.currentColumn = 0;
+        int count = StatBase.stats.size();
+        int labelWidth = STATUS_BUTTON_WIDTH;
+        for (var stat : StatBase.stats) {
+            String label = I18n.get("ui.gokistats_reborn.level", DataHelper.getPlayerStatLevel(player, stat), stat.getLimit());
+            labelWidth = Math.max(labelWidth, font.width(label));
+        }
+        int cellWidth = Math.max(36, Math.min(64, labelWidth + 8));
+        int rowPitch = STATUS_BUTTON_HEIGHT + 3 + font.lineHeight + 10;
+        int availableWidth = Math.max(1, width - MARGIN * 2);
+        int availableHeight = Math.max(1, height - HEADER_HEIGHT - FOOTER_HEIGHT);
+        int columns = 1;
+        float scale = 0F;
+        for (int candidate = 1; candidate <= Math.min(MAX_COLUMNS, Math.max(1, count)); candidate++) {
+            int rows = Math.max(1, (count + candidate - 1) / candidate);
+            int gridHeight = rows * rowPitch - 10;
+            float candidateScale = Math.min(1F, Math.min(availableWidth / (float) (candidate * cellWidth), availableHeight / (float) gridHeight));
+            if (candidateScale >= scale) {
+                columns = candidate;
+                scale = candidateScale;
             }
-            if (this.currentRow >= COLUMNS.length) {
-                this.currentRow = (COLUMNS.length - 1);
+        }
+        int rows = Math.max(1, (count + columns - 1) / columns);
+        int gridHeight = (int) Math.ceil((rows * rowPitch - 10) * scale);
+        gridTop = HEADER_HEIGHT + (availableHeight - gridHeight) / 2;
+        int buttonWidth = Math.max(1, Math.round(STATUS_BUTTON_WIDTH * scale));
+        int buttonHeight = Math.max(1, Math.round(STATUS_BUTTON_HEIGHT * scale));
+        for (int index = 0; index < count; index++) {
+            int row = index / columns;
+            int rowColumns = Math.min(columns, count - row * columns);
+            float rowWidth = rowColumns * cellWidth * scale;
+            int x = Math.round((width - rowWidth) / 2F + (index % columns * cellWidth + (cellWidth - STATUS_BUTTON_WIDTH) / 2F) * scale);
+            int y = Math.round(gridTop + row * rowPitch * scale);
+            addRenderableWidget(new GuiStatButton(index, x, y, buttonWidth, buttonHeight, StatBase.stats.get(index), player, this::actionPerformed,
+                    scale, Math.max(1, Math.round((cellWidth - 6) * scale))));
+        }
+        GokiStats.log.debug("Stats screen layout: skills={}, columns={}, rows={}, scale={}, cellWidth={}, screen={}x{}", count, columns, rows, scale, cellWidth, width, height);
+        if (!requestedSync) {
+            GokiPacketHandler.CHANNEL.sendToServer(new C2SRequestStatSync());
+            requestedSync = true;
+        }
+    }
+
+    @Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        renderBackground(graphics);
+        drawFittedText(graphics, title.getString(), Math.max(5, gridTop - 20), 0xFFFFFFFF);
+        super.render(graphics, mouseX, mouseY, partialTick);
+        drawFittedText(graphics, I18n.get("ui.gokistats_reborn.menu_hint"), height - 28, 0xFFCCCCCC);
+        drawFittedText(graphics, I18n.get("ui.currentxp", DataHelper.getXPTotal(player)), height - 14, 0xFFFFFFFF);
+        for (var renderable : renderables) {
+            if (renderable instanceof GuiStatButton button && button.isUnderMouse(mouseX, mouseY)) {
+                new GuiStatTooltip(button.stat, player).render(graphics, button.getX() + button.getWidth() / 2, button.getY() - 1, partialTick, button.getHeight());
+                break;
             }
         }
     }
 
-    private Vec2 getButton(int n) {
-        var columns = COLUMNS[this.currentRow];
-        var x = this.currentColumn;
-        var y = this.currentRow;
-        var rows = COLUMNS.length;
-        var width = columns * 32 * SCALE;
-        var height = rows * 36 * SCALE;
-        return new Vec2((width / columns * x + (this.width - width + 8.0F) / 2.0F),
-                (height / rows * y + (this.height - height + 12.0F) / 2.0F));
-    }
-
-    protected void actionPerformed(Button btn) {
-        if (!(btn instanceof GuiStatButton button))
-            return;
-
-        if ((button.id >= 0) && (button.id <= StatBase.totalStats.orElse(0))) {
-            if (!hasControlDown())
-                GokiPacketHandler.CHANNEL.sendToServer(new C2SStatSync(StatBase.stats.indexOf(button.stat), 1));
-            else // Downgrade
-                GokiPacketHandler.CHANNEL.sendToServer(new C2SStatSync(StatBase.stats.indexOf(button.stat), -1));
+    private void drawFittedText(GuiGraphics graphics, String text, int y, int color) {
+        float scale = Math.min(1F, Math.max(1, width - MARGIN * 2) / (float) Math.max(1, font.width(text)));
+        graphics.pose().pushPose();
+        try {
+            graphics.pose().translate(width / 2F, y, 0);
+            graphics.pose().scale(scale, scale, 1F);
+            graphics.drawCenteredString(font, text, 0, 0, color);
+        } finally {
+            graphics.pose().popPose();
         }
     }
 
+    protected void actionPerformed(Button button) {
+        if (button instanceof GuiStatButton statButton && statButton.id >= 0 && statButton.id < StatBase.stats.size())
+            GokiPacketHandler.CHANNEL.sendToServer(new C2SStatSync(statButton.id, hasControlDown() ? -1 : 1));
+    }
 }

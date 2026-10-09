@@ -1,25 +1,25 @@
 package net.infstudio.goki.client.gui;
 
 import net.infstudio.goki.GokiStats;
-import net.minecraft.client.gui.GuiGraphics;
 import net.infstudio.goki.api.stat.StatBase;
 import net.infstudio.goki.common.config.GokiConfig;
 import net.infstudio.goki.common.utils.DataHelper;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.player.Player;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GuiStatTooltip {
     private static boolean renderLayerLogged;
-    private StatBase stat;
-    private Player player;
-    private int padding = 4;
-
+    private final StatBase stat;
+    private final Player player;
+    private final int padding = 4;
     private final Minecraft mc = Minecraft.getInstance();
 
     public GuiStatTooltip(StatBase stat, Player player) {
@@ -27,93 +27,76 @@ public class GuiStatTooltip {
         this.player = player;
     }
 
-    public void render(GuiGraphics stack, int drawX, int drawY, float partialTicks) {
-        Map<String, Integer> messageColorMap = new LinkedHashMap<>();
+    public void render(GuiGraphics graphics, int drawX, int drawY, float partialTicks) {
+        render(graphics, drawX, drawY, partialTicks, GuiStats.STATUS_BUTTON_HEIGHT);
+    }
 
-        AtomicInteger widthAtomic = new AtomicInteger(), heightAtomic = new AtomicInteger();
-
-        int level = DataHelper.getPlayerStatLevel(this.player, this.stat);
-
-        messageColorMap.put(this.stat.getLocalizedName() + " L" + level, -13312); // Header
-
-        messageColorMap.put(this.stat.getLocalizedDescription(this.player), -1); // Message
-        if (level >= this.stat.getLimit())
-            messageColorMap.put(I18n.get("ui.max"), -16724737);
-        else
-            messageColorMap.put(I18n.get("ui.cost", this.stat.getCost(level)), -16724737); // Cost
-
+    public void render(GuiGraphics graphics, int drawX, int drawY, float partialTicks, int buttonHeight) {
+        if (mc.screen == null) return;
+        int screenWidth = mc.screen.width;
+        int screenHeight = mc.screen.height;
+        int wrapWidth = Math.max(1, Math.min(260, screenWidth - padding * 2 - 4));
+        List<Line> lines = new ArrayList<>();
+        int level = DataHelper.getPlayerStatLevel(player, stat);
+        add(lines, stat.getLocalizedName() + " " + I18n.get("ui.gokistats_reborn.level", level, stat.getLimit()), -13312, wrapWidth);
+        add(lines, stat.getLocalizedDescription(player), -1, wrapWidth);
+        add(lines, level >= stat.getLimit() ? I18n.get("ui.max") : I18n.get("ui.cost", stat.getCost(level)), -16724737, wrapWidth);
         if (Screen.hasControlDown())
-            messageColorMap.put(I18n.get("ui.return", this.stat.getCost(level) * GokiConfig.SERVER.globalRevertFactor.get()), -16724737); // Cost
-
-        int revertLevel = DataHelper.getPlayerRevertStatLevel(player, stat);
-        if (revertLevel > 0) {
-            if (GokiConfig.SERVER.globalMaxRevertLevel.get() != -1)
-                messageColorMap.put(I18n.get("ui.reverted", revertLevel, String.valueOf(GokiConfig.SERVER.globalMaxRevertLevel.get())), -16724737); // Reverted
-            else
-                messageColorMap.put(I18n.get("ui.reverted", revertLevel, I18n.get("ui.infinite")), -16724737); // Reverted
+            add(lines, I18n.get("ui.return", stat.getCost(level) * GokiConfig.SERVER.globalRevertFactor.get()), -16724737, wrapWidth);
+        int reverted = DataHelper.getPlayerRevertStatLevel(player, stat);
+        if (reverted > 0) {
+            int limit = GokiConfig.SERVER.globalMaxRevertLevel.get();
+            add(lines, I18n.get("ui.reverted", reverted, limit == -1 ? I18n.get("ui.infinite") : Integer.toString(limit)), -16724737, wrapWidth);
         }
-
-        if (Screen.hasControlDown()) { // Is player reverting?
-            if (DataHelper.canPlayerRevertStat(player, stat))
-                messageColorMap.put(I18n.get("ui.revert"), 0xff0467ff);
-            else
-                messageColorMap.put(I18n.get("ui.norevert"), 0xfffb1a00);
-        } else
-            messageColorMap.put(I18n.get("ui.hover"), 0xff0467ff);
-
-        messageColorMap.forEach((text, color) -> {
-            widthAtomic.set(Math.max(widthAtomic.get(), this.mc.font.width(text)));
-            heightAtomic.addAndGet(this.mc.font.lineHeight);
-        });
-
-        int width = widthAtomic.get() + this.padding * 2;
-        int height = heightAtomic.get() + this.padding * 2;
-        int h = height / messageColorMap.size();
-        int x = drawX - width / 2;
-        int leftEdge = 0;
-        int left = x;
-        if (left < leftEdge) {
-            x = leftEdge + 1;
-        }
-        int rightEdge = this.mc.screen.width;
-        int right = x + width;
-        if (right > rightEdge) {
-            x += rightEdge - right - 1;
-        }
-        stack.flush();
-        stack.pose().pushPose();
-        stack.pose().translate(0, 0, 400);
+        if (Screen.hasControlDown()) {
+            boolean canRevert = DataHelper.canPlayerRevertStat(player, stat);
+            add(lines, I18n.get(canRevert ? "ui.revert" : "ui.norevert"), canRevert ? 0xFF0467FF : 0xFFFB1A00, wrapWidth);
+        } else add(lines, I18n.get("ui.hover"), 0xFF0467FF, wrapWidth);
+        int width = lines.stream().mapToInt(line -> mc.font.width(line.text())).max().orElse(0) + padding * 2;
+        int height = lines.size() * mc.font.lineHeight + padding * 2;
+        float scale = Math.min(1F, Math.min(Math.max(1, screenWidth - 4) / (float) width, Math.max(1, screenHeight - 4) / (float) height));
+        int actualWidth = (int) Math.ceil(width * scale);
+        int actualHeight = (int) Math.ceil(height * scale);
+        int x = Math.max(2, Math.min(drawX - actualWidth / 2, screenWidth - actualWidth - 2));
+        int y = drawY - actualHeight - 2;
+        if (y < 2) y = drawY + buttonHeight + 4;
+        y = Math.max(2, Math.min(y, screenHeight - actualHeight - 2));
+        graphics.flush();
+        graphics.pose().pushPose();
+        graphics.pose().translate(x, y, 400);
+        graphics.pose().scale(scale, scale, 1F);
         try {
-            stack.fill(x, drawY, x + width, drawY - height, -872415232);
-            drawBorder(stack, x, drawY, width, height, -1);
-            stack.flush();
-
-            for (int i = messageColorMap.size(); i >= 1; i--) {
-                Map.Entry<String, Integer> entry = messageColorMap.entrySet().toArray(new Map.Entry[0])[messageColorMap.size() - i];
-                stack.drawString(this.mc.font,
-                        entry.getKey(),
-                        x + this.padding / 2,
-                        drawY - h * i + this.padding / 2,
-                        entry.getValue());
+            graphics.fill(0, 0, width, height, -872415232);
+            drawBorder(graphics, 0, height, width, height, -1);
+            graphics.flush();
+            int textY = padding;
+            for (Line line : lines) {
+                graphics.drawString(mc.font, line.text(), padding, textY, line.color());
+                textY += mc.font.lineHeight;
             }
-
             if (!renderLayerLogged) {
-                GokiStats.log.debug("Rendering skill tooltip on overlay layer: z=400, width={}, height={}, base batch flushed", width, height);
+                GokiStats.log.debug("Rendering skill tooltip on overlay layer: z=400, width={}, height={}, scale={}, x={}, y={}, base batch flushed", width, height, scale, x, y);
                 renderLayerLogged = true;
             }
         } finally {
             try {
-                stack.flush();
+                graphics.flush();
             } finally {
-                stack.pose().popPose();
+                graphics.pose().popPose();
             }
         }
     }
 
-    private void drawBorder(GuiGraphics stack, int x, int y, int width, int height, int borderColor) {
-        stack.hLine(x - 1, x + width, y, borderColor);
-        stack.hLine(x - 1, x + width, y - height, borderColor);
-        stack.vLine(x - 1, y, y - height, borderColor);
-        stack.vLine(x + width, y, y - height, borderColor);
+    private void add(List<Line> lines, String text, int color, int width) {
+        for (FormattedCharSequence line : mc.font.split(Component.literal(text), width)) lines.add(new Line(line, color));
     }
+
+    private void drawBorder(GuiGraphics graphics, int x, int y, int width, int height, int color) {
+        graphics.hLine(x - 1, x + width, y, color);
+        graphics.hLine(x - 1, x + width, y - height, color);
+        graphics.vLine(x - 1, y, y - height, color);
+        graphics.vLine(x + width, y, y - height, color);
+    }
+
+    private record Line(FormattedCharSequence text, int color) {}
 }
