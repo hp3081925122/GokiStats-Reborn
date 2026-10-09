@@ -1,101 +1,79 @@
 package net.infstudio.goki.client.gui;
 
-import net.minecraft.client.gui.GuiGraphics;
 import net.infstudio.goki.api.stat.StatBase;
 import net.infstudio.goki.common.config.GokiConfig;
 import net.infstudio.goki.common.utils.DataHelper;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.player.Player;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GuiStatTooltip {
-    private StatBase stat;
-    private Player player;
-    private int padding = 4;
-
-    private final Minecraft mc = Minecraft.getInstance();
+    private final StatBase stat;
+    private final Player player;
 
     public GuiStatTooltip(StatBase stat, Player player) {
         this.stat = stat;
         this.player = player;
     }
 
-    public void render(GuiGraphics stack, int drawX, int drawY, float partialTicks) {
-        Map<String, Integer> messageColorMap = new LinkedHashMap<>();
-
-        AtomicInteger widthAtomic = new AtomicInteger(), heightAtomic = new AtomicInteger();
-
-        int level = DataHelper.getPlayerStatLevel(this.player, this.stat);
-
-        messageColorMap.put(this.stat.getLocalizedName() + " L" + level, -13312); // Header
-
-        messageColorMap.put(this.stat.getLocalizedDescription(this.player), -1); // Message
-        if (level >= this.stat.getLimit())
-            messageColorMap.put(I18n.get("ui.max"), -16724737);
-        else
-            messageColorMap.put(I18n.get("ui.cost", this.stat.getCost(level)), -16724737); // Cost
-
-        if (Screen.hasControlDown())
-            messageColorMap.put(I18n.get("ui.return", this.stat.getCost(level) * GokiConfig.SERVER.globalRevertFactor.get()), -16724737); // Cost
-
-        int revertLevel = DataHelper.getPlayerRevertStatLevel(player, stat);
-        if (revertLevel > 0) {
-            if (GokiConfig.SERVER.globalMaxRevertLevel.get() != -1)
-                messageColorMap.put(I18n.get("ui.reverted", revertLevel, String.valueOf(GokiConfig.SERVER.globalMaxRevertLevel.get())), -16724737); // Reverted
-            else
-                messageColorMap.put(I18n.get("ui.reverted", revertLevel, I18n.get("ui.infinite")), -16724737); // Reverted
+    public void render(GuiGraphics graphics, int anchorX, int anchorY, int buttonHeight, int screenWidth, int screenHeight) {
+        UiSkin skin = UiSkin.get();
+        UiSkin.Layout layout = skin.layout();
+        var font = Minecraft.getInstance().font;
+        int maxWidth = Math.max(1, Math.min(layout.tooltipMaxWidth, screenWidth - (layout.tooltipMargin + layout.tooltipPadding) * 2));
+        List<Line> lines = new ArrayList<>();
+        int level = DataHelper.getPlayerStatLevel(player, stat);
+        add(lines, stat.getLocalizedName() + " L" + level, "tooltip_title", maxWidth);
+        add(lines, stat.getLocalizedDescription(player), "tooltip_text", maxWidth);
+        if (!stat.isEnabled()) add(lines, I18n.get("ui.gokistats_reborn.disabled"), "error", maxWidth);
+        if (level >= stat.getLimit()) add(lines, I18n.get("ui.max"), "tooltip_value", maxWidth);
+        else add(lines, I18n.get("ui.cost", (double) stat.getCost(level)), "tooltip_value", maxWidth);
+        if (Screen.hasControlDown()) {
+            int refund = level > 0 ? (int) (stat.getCost(level - 1) * GokiConfig.SERVER.globalRevertFactor.get()) : 0;
+            add(lines, I18n.get("ui.return", (double) refund), "tooltip_value", maxWidth);
         }
-
-        if (Screen.hasControlDown()) { // Is player reverting?
-            if (DataHelper.canPlayerRevertStat(player, stat))
-                messageColorMap.put(I18n.get("ui.revert"), 0xff0467ff);
-            else
-                messageColorMap.put(I18n.get("ui.norevert"), 0xfffb1a00);
-        } else
-            messageColorMap.put(I18n.get("ui.hover"), 0xff0467ff);
-
-        messageColorMap.forEach((text, color) -> {
-            widthAtomic.set(Math.max(widthAtomic.get(), this.mc.font.width(text)));
-            heightAtomic.addAndGet(this.mc.font.lineHeight);
-        });
-
-        int width = widthAtomic.get() + this.padding * 2;
-        int height = heightAtomic.get() + this.padding * 2;
-        int h = height / messageColorMap.size();
-        int x = drawX - width / 2;
-        int leftEdge = 0;
-        int left = x;
-        if (left < leftEdge) {
-            x = leftEdge + 1;
+        int reverted = DataHelper.getPlayerRevertStatLevel(player, stat);
+        if (reverted > 0) {
+            int limit = GokiConfig.SERVER.globalMaxRevertLevel.get();
+            add(lines, I18n.get("ui.reverted", reverted, limit == -1 ? I18n.get("ui.infinite") : Integer.toString(limit)), "tooltip_value", maxWidth);
         }
-        int rightEdge = this.mc.screen.width;
-        int right = x + width;
-        if (right > rightEdge) {
-            x += rightEdge - right - 1;
+        boolean canRevert = stat.isEnabled() && DataHelper.canPlayerRevertStat(player, stat);
+        if (Screen.hasControlDown()) add(lines, I18n.get(canRevert ? "ui.revert" : "ui.norevert"), canRevert ? "action" : "error", maxWidth);
+        else if (stat.isEnabled()) add(lines, I18n.get("ui.hover"), "action", maxWidth);
+        int width = lines.stream().mapToInt(line -> font.width(line.text())).max().orElse(0) + layout.tooltipPadding * 2;
+        int height = lines.size() * font.lineHeight + layout.tooltipPadding * 2;
+        float scale = Math.min(1F, Math.max(1, screenHeight - layout.tooltipMargin * 2) / (float) height);
+        int actualWidth = (int) Math.ceil(width * scale);
+        int actualHeight = (int) Math.ceil(height * scale);
+        int x = Math.max(layout.tooltipMargin, Math.min(anchorX - actualWidth / 2, screenWidth - actualWidth - layout.tooltipMargin));
+        int y = anchorY - actualHeight - layout.tooltipMargin;
+        if (y < layout.tooltipMargin) y = anchorY + buttonHeight + layout.tooltipMargin;
+        y = Math.max(layout.tooltipMargin, Math.min(y, screenHeight - actualHeight - layout.tooltipMargin));
+        graphics.flush();
+        graphics.pose().pushPose();
+        graphics.pose().translate(x, y, 400);
+        graphics.pose().scale(scale, scale, 1F);
+        skin.draw(graphics, "tooltip", 0, 0, width, height);
+        int textY = layout.tooltipPadding;
+        for (Line line : lines) {
+            graphics.drawString(font, line.text(), layout.tooltipPadding, textY, skin.color(line.color()), false);
+            textY += font.lineHeight;
         }
-        stack.fill(x, drawY, x + width, drawY - height, -872415232);
-
-        for (int i = messageColorMap.size(); i >= 1; i--) {
-            Map.Entry<String, Integer> entry = messageColorMap.entrySet().toArray(new Map.Entry[0])[messageColorMap.size() - i];
-            stack.drawString(this.mc.font,
-                    entry.getKey(),
-                    x + this.padding / 2,
-                    drawY - h * i + this.padding / 2,
-                    entry.getValue());
-        }
-
-        drawBorder(stack, x, drawY, width, height, -1);
+        graphics.flush();
+        graphics.pose().popPose();
     }
 
-    private void drawBorder(GuiGraphics stack, int x, int y, int width, int height, int borderColor) {
-        stack.hLine(x - 1, x + width, y, borderColor);
-        stack.hLine(x - 1, x + width, y - height, borderColor);
-        stack.vLine(x - 1, y, y - height, borderColor);
-        stack.vLine(x + width, y, y - height, borderColor);
+    private void add(List<Line> lines, String text, String color, int width) {
+        for (FormattedCharSequence line : Minecraft.getInstance().font.split(Component.literal(text), width))
+            lines.add(new Line(line, color));
     }
+
+    private record Line(FormattedCharSequence text, String color) {}
 }

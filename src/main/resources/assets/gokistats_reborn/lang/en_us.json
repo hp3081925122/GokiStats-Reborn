@@ -65,5 +65,8 @@
   "key.categories.gokistats_reborn": "GokiStats Reborn",
   "commands.gokistats_reborn.reload.unavailable": "Skill configuration is managed by Forge. Restart the world to apply changes.",
   "skill.gokistats_reborn.treasure_finder.disabled": "Requires Additional Events to be installed",
-  "skill.gokistats_reborn.mining_magician.disabled": "Requires Additional Events to be installed"
+  "skill.gokistats_reborn.mining_magician.disabled": "Requires Additional Events to be installed",
+  "ui.gokistats_reborn.title": "GokiStats Reborn",
+  "ui.gokistats_reborn.hint": "Click: upgrade | Ctrl+click: refund | Esc: close",
+  "ui.gokistats_reborn.disabled": "This skill is disabled."
 }

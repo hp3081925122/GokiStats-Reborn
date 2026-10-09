@@ -1,0 +1,210 @@
+{
+  "patches": {
+    "backdrop": {
+      "texture": "gokistats_reborn:textures/gui/backdrop.png",
+      "width": 32,
+      "height": 32,
+      "border": 0,
+      "tint": "#B0182028",
+      "sourceX": 6,
+      "sourceY": 6,
+      "sourceWidth": 20,
+      "sourceHeight": 20
+    },
+    "panel": {
+      "texture": "gokistats_reborn:textures/gui/panel.png",
+      "width": 32,
+      "height": 32,
+      "border": 6,
+      "tint": "#FFFFFFFF",
+      "sourceX": 0,
+      "sourceY": 0,
+      "sourceWidth": 32,
+      "sourceHeight": 32
+    },
+    "header": {
+      "texture": "gokistats_reborn:textures/gui/header.png",
+      "width": 32,
+      "height": 32,
+      "border": 6,
+      "tint": "#FFFFFFFF",
+      "sourceX": 0,
+      "sourceY": 0,
+      "sourceWidth": 32,
+      "sourceHeight": 32
+    },
+    "footer": {
+      "texture": "gokistats_reborn:textures/gui/footer.png",
+      "width": 32,
+      "height": 32,
+      "border": 6,
+      "tint": "#FFFFFFFF",
+      "sourceX": 0,
+      "sourceY": 0,
+      "sourceWidth": 32,
+      "sourceHeight": 32
+    },
+    "tooltip": {
+      "texture": "gokistats_reborn:textures/gui/tooltip.png",
+      "width": 32,
+      "height": 32,
+      "border": 6,
+      "tint": "#FFFFFFFF",
+      "sourceX": 0,
+      "sourceY": 0,
+      "sourceWidth": 32,
+      "sourceHeight": 32
+    },
+    "button_normal": {
+      "texture": "gokistats_reborn:textures/gui/button_normal.png",
+      "width": 32,
+      "height": 32,
+      "border": 6,
+      "tint": "#FFFFFFFF",
+      "sourceX": 0,
+      "sourceY": 0,
+      "sourceWidth": 32,
+      "sourceHeight": 32
+    },
+    "button_hover": {
+      "texture": "gokistats_reborn:textures/gui/button_hover.png",
+      "width": 32,
+      "height": 32,
+      "border": 6,
+      "tint": "#FFFFFFFF",
+      "sourceX": 0,
+      "sourceY": 0,
+      "sourceWidth": 32,
+      "sourceHeight": 32
+    },
+    "button_pressed": {
+      "texture": "gokistats_reborn:textures/gui/button_pressed.png",
+      "width": 32,
+      "height": 32,
+      "border": 6,
+      "tint": "#FFFFFFFF",
+      "sourceX": 0,
+      "sourceY": 0,
+      "sourceWidth": 32,
+      "sourceHeight": 32
+    },
+    "button_disabled": {
+      "texture": "gokistats_reborn:textures/gui/button_disabled.png",
+      "width": 32,
+      "height": 32,
+      "border": 6,
+      "tint": "#FFFFFFFF",
+      "sourceX": 0,
+      "sourceY": 0,
+      "sourceWidth": 32,
+      "sourceHeight": 32
+    },
+    "button_maximum": {
+      "texture": "gokistats_reborn:textures/gui/button_maximum.png",
+      "width": 32,
+      "height": 32,
+      "border": 6,
+      "tint": "#FFFFFFFF",
+      "sourceX": 0,
+      "sourceY": 0,
+      "sourceWidth": 32,
+      "sourceHeight": 32
+    },
+    "button_refund": {
+      "texture": "gokistats_reborn:textures/gui/button_refund.png",
+      "width": 32,
+      "height": 32,
+      "border": 6,
+      "tint": "#FFFFFFFF",
+      "sourceX": 0,
+      "sourceY": 0,
+      "sourceWidth": 32,
+      "sourceHeight": 32
+    },
+    "button_unaffordable": {
+      "texture": "gokistats_reborn:textures/gui/button_unaffordable.png",
+      "width": 32,
+      "height": 32,
+      "border": 6,
+      "tint": "#FFFFFFFF",
+      "sourceX": 0,
+      "sourceY": 0,
+      "sourceWidth": 32,
+      "sourceHeight": 32
+    }
+  },
+  "colors": {
+    "title": "#FFFFF0CE",
+    "text": "#FFF7ECD5",
+    "muted": "#FF79552F",
+    "level": "#FF553C22",
+    "maximum": "#FF9D640E",
+    "tooltip_title": "#FF283C4B",
+    "tooltip_text": "#FF1C2C3A",
+    "tooltip_value": "#FF244A60",
+    "action": "#FF254A8A",
+    "error": "#FF8C2424"
+  },
+  "icons": [
+    {
+      "texture": "gokistats_reborn:textures/rpg_icons.png",
+      "firstId": 0,
+      "count": 20,
+      "width": 512,
+      "height": 512,
+      "cellWidth": 48,
+      "cellHeight": 48,
+      "rows": 10,
+      "stateColumns": 4,
+      "states": {
+        "normal": 0,
+        "hover": 1,
+        "disabled": 2,
+        "maximum": 3,
+        "refund": 1,
+        "unaffordable": 0
+      }
+    },
+    {
+      "texture": "gokistats_reborn:textures/rpg_icons_2.png",
+      "firstId": 20,
+      "count": 20,
+      "width": 512,
+      "height": 512,
+      "cellWidth": 48,
+      "cellHeight": 48,
+      "rows": 10,
+      "stateColumns": 4,
+      "states": {
+        "normal": 0,
+        "hover": 1,
+        "disabled": 2,
+        "maximum": 3,
+        "refund": 1,
+        "unaffordable": 0
+      }
+    }
+  ],
+  "layout": {
+    "columns": 7,
+    "padding": 12,
+    "headerHeight": 36,
+    "footerHeight": 48,
+    "buttonSize": 32,
+    "iconSize": 24,
+    "columnGap": 8,
+    "rowGap": 3,
+    "levelGap": 2,
+    "headerInset": 8,
+    "headerTop": 7,
+    "headerBarHeight": 22,
+    "titleOffset": 7,
+    "footerBottom": 22,
+    "footerBarHeight": 20,
+    "xpOffset": 6,
+    "hintBottom": 14,
+    "tooltipPadding": 8,
+    "tooltipMaxWidth": 260,
+    "tooltipMargin": 4
+  }
+}

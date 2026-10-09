@@ -62,5 +62,8 @@
   "ui.infinite": "Неограниченно",
   "ui.norevert": "Вы не можете больше откатывать!",
   "key.categories.gokistats_reborn": "GokiStats Reborn",
-  "commands.gokistats_reborn.reload.unavailable": "Skill configuration is managed by Forge. Restart the world to apply changes."
+  "commands.gokistats_reborn.reload.unavailable": "Skill configuration is managed by Forge. Restart the world to apply changes.",
+  "ui.gokistats_reborn.title": "GokiStats Reborn",
+  "ui.gokistats_reborn.hint": "Клик: улучшить | Ctrl+клик: вернуть | Esc: закрыть",
+  "ui.gokistats_reborn.disabled": "Этот навык отключён."
 }

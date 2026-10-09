@@ -1,128 +1,131 @@
 package net.infstudio.goki.client.gui;
 
-import net.minecraft.client.gui.GuiGraphics;
 import net.infstudio.goki.api.stat.StatBase;
 import net.infstudio.goki.common.network.GokiPacketHandler;
 import net.infstudio.goki.common.network.message.C2SRequestStatSync;
 import net.infstudio.goki.common.network.message.C2SStatSync;
 import net.infstudio.goki.common.utils.DataHelper;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.Vec2;
 
-import javax.annotation.Nonnull;
-
-/**
- * Stats ui, where player upgrade/downgrade their skills
- */
 public class GuiStats extends Screen {
-    public static final int STATUS_BUTTON_WIDTH = 24;
-    public static final int STATUS_BUTTON_HEIGHT = 24;
-    // private static final int HORIZONTAL_SPACING = 8;
-    // private static final int VERTICAL_SPACING = 12;
-    public static final int IMAGE_ROWS = 10;
-    private static final int[] COLUMNS =
-            {4, 4, 5, 4, 5, 4};
-    public static float SCALE = 1.0F;
-
     private final Player player = Minecraft.getInstance().player;
-    private final Font fontRenderer = Minecraft.getInstance().font;
-
-    private int currentColumn = 0;
-    private int currentRow = 0;
-
-    /**
-     * Tooltip for the skill under mouse hover
-     */
-    private GuiStatTooltip toolTip = null;
-
+    private UiSkin skin;
+    private float viewScale = 1F;
+    private int canvasWidth, canvasHeight, panelX, panelY, panelWidth, panelHeight;
+    private boolean requestedSync;
 
     public GuiStats() {
-        super(Component.literal(""));
+        super(Component.translatable("ui.gokistats_reborn.title"));
     }
 
-    /**
-     * Should the screen pauses Singleplayer game
-     */
     @Override
     public boolean isPauseScreen() {
         return false;
     }
 
     @Override
-    public void render(@Nonnull GuiGraphics stack, int mouseX, int mouseY, float par3) {
-        var toolTipX = 0;
-        var toolTipY = 0;
-        this.toolTip = null;
-        renderBackground(stack);
-        super.render(stack, mouseX, mouseY, par3);
-        for (var i = 0; i < this.renderables.size(); i++) {
-            if ((this.renderables.get(i) instanceof GuiStatButton button)) {
-                if (button.isUnderMouse(mouseX, mouseY)) {
-                    this.toolTip = new GuiStatTooltip(button.stat, this.player);
-                    toolTipX = button.getX() + 12;
-                    toolTipY = button.getY() - 1;
-                    break;
-                }
-            }
-        }
-        stack.drawCenteredString(fontRenderer,
-                I18n.get("ui.currentxp", DataHelper.getXPTotal(player)),
-                width / 2,
-                this.height - 16,
-                0xFFFFFFFF);
-
-        if (this.toolTip != null)
-            this.toolTip.render(stack, toolTipX, toolTipY, 0);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
     public void init() {
-        this.currentColumn = 0;
-        this.currentRow = 0;
-        // 同步技能数据
-        GokiPacketHandler.CHANNEL.sendToServer(new C2SRequestStatSync());
-        for (var stat = 0; stat < StatBase.totalStats.orElse(0); stat++) {
-            var pos = getButton(stat);
-            addRenderableWidget(new GuiStatButton(stat, (int) pos.x, (int) pos.y, 24, 24, StatBase.stats.get(stat), this.player, this::actionPerformed));
-            this.currentColumn += 1;
-            if (this.currentColumn >= COLUMNS[this.currentRow]) {
-                this.currentRow += 1;
-                this.currentColumn = 0;
-            }
-            if (this.currentRow >= COLUMNS.length) {
-                this.currentRow = (COLUMNS.length - 1);
-            }
+        skin = UiSkin.get();
+        UiSkin.Layout layout = skin.layout();
+        int count = StatBase.totalStats.orElse(0);
+        int rows = Math.max(1, (count + layout.columns - 1) / layout.columns);
+        int pitch = layout.buttonSize + layout.levelGap + font.lineHeight + layout.rowGap;
+        panelWidth = layout.padding * 2 + layout.columns * layout.buttonSize + (layout.columns - 1) * layout.columnGap;
+        panelHeight = layout.headerHeight + rows * pitch - layout.rowGap + layout.footerHeight;
+        viewScale = Math.min(1F, Math.min(Math.max(1, width - 8) / (float) panelWidth, Math.max(1, height - 8) / (float) panelHeight));
+        canvasWidth = (int) (width / viewScale);
+        canvasHeight = (int) (height / viewScale);
+        panelX = (canvasWidth - panelWidth) / 2;
+        panelY = (canvasHeight - panelHeight) / 2;
+        if (!requestedSync) {
+            GokiPacketHandler.CHANNEL.sendToServer(new C2SRequestStatSync());
+            requestedSync = true;
+        }
+        for (int index = 0; index < count; index++) {
+            int row = index / layout.columns;
+            int columns = Math.min(layout.columns, count - row * layout.columns);
+            int rowWidth = columns * layout.buttonSize + (columns - 1) * layout.columnGap;
+            int x = panelX + (panelWidth - rowWidth) / 2 + index % layout.columns * (layout.buttonSize + layout.columnGap);
+            int y = panelY + layout.headerHeight + row * pitch;
+            addRenderableWidget(new GuiStatButton(index, x, y, layout.buttonSize, layout.buttonSize, StatBase.stats.get(index), player, this::actionPerformed));
         }
     }
 
-    private Vec2 getButton(int n) {
-        var columns = COLUMNS[this.currentRow];
-        var x = this.currentColumn;
-        var y = this.currentRow;
-        var rows = COLUMNS.length;
-        var width = columns * 32 * SCALE;
-        var height = rows * 36 * SCALE;
-        return new Vec2((width / columns * x + (this.width - width + 8.0F) / 2.0F),
-                (height / rows * y + (this.height - height + 12.0F) / 2.0F));
-    }
-
-    protected void actionPerformed(Button btn) {
-        if (!(btn instanceof GuiStatButton button))
-            return;
-
-        if ((button.id >= 0) && (button.id <= StatBase.totalStats.orElse(0))) {
-            if (!hasControlDown())
-                GokiPacketHandler.CHANNEL.sendToServer(new C2SStatSync(StatBase.stats.indexOf(button.stat), 1));
-            else // Downgrade
-                GokiPacketHandler.CHANNEL.sendToServer(new C2SStatSync(StatBase.stats.indexOf(button.stat), -1));
+    @Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        if (skin != UiSkin.get()) rebuildWidgets();
+        int logicalX = (int) (mouseX / viewScale);
+        int logicalY = (int) (mouseY / viewScale);
+        UiSkin.Layout layout = skin.layout();
+        graphics.pose().pushPose();
+        graphics.pose().scale(viewScale, viewScale, 1F);
+        skin.draw(graphics, "backdrop", 0, 0, canvasWidth + 1, canvasHeight + 1);
+        skin.draw(graphics, "panel", panelX, panelY, panelWidth, panelHeight);
+        skin.draw(graphics, "header", panelX + layout.headerInset, panelY + layout.headerTop, panelWidth - layout.headerInset * 2, layout.headerBarHeight);
+        drawFittedText(graphics, title.getString(), canvasWidth / 2, panelY + layout.headerTop + layout.titleOffset, panelWidth - layout.padding * 2, skin.color("title"));
+        int footerY = panelY + panelHeight - layout.footerBottom - layout.footerBarHeight;
+        skin.draw(graphics, "footer", panelX + layout.padding, footerY, panelWidth - layout.padding * 2, layout.footerBarHeight);
+        drawFittedText(graphics, I18n.get("ui.currentxp", (double) DataHelper.getXPTotal(player)), canvasWidth / 2, footerY + layout.xpOffset, panelWidth - layout.padding * 2, skin.color("text"));
+        drawFittedText(graphics, I18n.get("ui.gokistats_reborn.hint"), canvasWidth / 2, panelY + panelHeight - layout.hintBottom, panelWidth - layout.padding * 2, skin.color("muted"));
+        super.render(graphics, logicalX, logicalY, partialTick);
+        GuiStatButton hovered = null;
+        GuiStatButton focused = null;
+        for (var renderable : renderables) {
+            if (renderable instanceof GuiStatButton button) {
+                if (button.isUnderMouse(logicalX, logicalY)) hovered = button;
+                if (button.isFocused()) focused = button;
+            }
         }
+        GuiStatButton selected = hovered != null ? hovered : focused;
+        if (selected != null)
+            new GuiStatTooltip(selected.stat, player).render(graphics, selected.getX() + selected.getWidth() / 2, selected.getY(), selected.getHeight(), canvasWidth, canvasHeight);
+        graphics.flush();
+        graphics.pose().popPose();
     }
 
+    private void drawFittedText(GuiGraphics graphics, String text, int centerX, int y, int maxWidth, int color) {
+        float scale = Math.min(1F, maxWidth / (float) Math.max(1, font.width(text)));
+        graphics.pose().pushPose();
+        graphics.pose().translate(centerX, y, 0);
+        graphics.pose().scale(scale, scale, 1F);
+        graphics.drawCenteredString(font, text, 0, 0, color);
+        graphics.flush();
+        graphics.pose().popPose();
+    }
+
+    @Override
+    public boolean mouseClicked(double x, double y, int button) {
+        return super.mouseClicked(x / viewScale, y / viewScale, button);
+    }
+
+    @Override
+    public boolean mouseReleased(double x, double y, int button) {
+        return super.mouseReleased(x / viewScale, y / viewScale, button);
+    }
+
+    @Override
+    public boolean mouseDragged(double x, double y, int button, double dx, double dy) {
+        return super.mouseDragged(x / viewScale, y / viewScale, button, dx / viewScale, dy / viewScale);
+    }
+
+    @Override
+    public void mouseMoved(double x, double y) {
+        super.mouseMoved(x / viewScale, y / viewScale);
+    }
+
+    @Override
+    public boolean mouseScrolled(double x, double y, double delta) {
+        return super.mouseScrolled(x / viewScale, y / viewScale, delta);
+    }
+
+    protected void actionPerformed(Button button) {
+        if (button instanceof GuiStatButton statButton && statButton.id >= 0 && statButton.id < StatBase.totalStats.orElse(0))
+            GokiPacketHandler.CHANNEL.sendToServer(new C2SStatSync(statButton.id, hasControlDown() ? -1 : 1));
+    }
 }

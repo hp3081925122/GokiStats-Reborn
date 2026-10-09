@@ -65,5 +65,8 @@
   "commands.gokistats_reborn.reload.unavailable": "技能配置由 Forge 管理，请重启世界以应用更改。",
   "skill.gokistats_reborn.roll.knockback": "*击退*",
   "skill.gokistats_reborn.treasure_finder.disabled": "未安装 Additional Events 模组时本功能禁用。",
-  "skill.gokistats_reborn.mining_magician.disabled": "未安装 Additional Events 模组时本功能禁用。"
+  "skill.gokistats_reborn.mining_magician.disabled": "未安装 Additional Events 模组时本功能禁用。",
+  "ui.gokistats_reborn.title": "GokiStats Reborn",
+  "ui.gokistats_reborn.hint": "点击升级 · Ctrl+点击退还 · Esc关闭",
+  "ui.gokistats_reborn.disabled": "此技能已禁用。"
 }
