@@ -1,6 +1,6 @@
 package net.infstudio.goki.common.stat.tool;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -21,10 +21,10 @@ public class TreasureFinderEntry {
     }
 
     public Block getBlock() {
-        return BuiltInRegistries.BLOCK.get(ResourceLocation.parse(block));
+        return BuiltInRegistries.BLOCK.getValue(Identifier.parse(block));
     }
 
     public Item getItem() {
-        return BuiltInRegistries.ITEM.get(ResourceLocation.parse(item));
+        return BuiltInRegistries.ITEM.getValue(Identifier.parse(item));
     }
 }

@@ -9,7 +9,7 @@ import net.infstudio.goki.common.config.GokiConfig;
 import net.infstudio.goki.common.init.GokiSounds;
 import net.infstudio.goki.common.utils.DataHelper;
 import net.infstudio.goki.common.utils.Reference;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -117,12 +117,12 @@ public class CommonHandler {
 
         if (victim instanceof Player player) {
             if (!source.is(DamageTypeTags.IS_FIRE) && !source.is(DamageTypeTags.BYPASSES_EFFECTS)) {
-                if (player.level().random.nextFloat() >= 1.0f - Stats.ROLL.getBonus(player)) {
+                if (player.getRandom().nextFloat() >= 1.0f - Stats.ROLL.getBonus(player)) {
                     // Avoid damage
                     event.setCanceled(true);
 
                     player.addEffect(
-                            new MobEffectInstance(MobEffects.DAMAGE_BOOST, 20, 2)
+                            new MobEffectInstance(MobEffects.STRENGTH, 20, 2)
                     );
 
                     victim.addTag("knockback");

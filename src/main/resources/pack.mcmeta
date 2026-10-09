@@ -1,1 +1,6 @@
-{"pack":{"description":"GokiStats Reborn resources","pack_format":34}}
+{
+  "pack": {
+    "description": "GokiStats Reborn resources",
+    "pack_format": 6
+  }
+}

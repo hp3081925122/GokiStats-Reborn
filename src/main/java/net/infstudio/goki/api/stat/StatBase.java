@@ -11,12 +11,11 @@ import net.infstudio.goki.common.utils.DataHelper;
 import net.infstudio.goki.common.utils.Reference;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import net.minecraft.core.Registry;
 import net.neoforged.neoforge.registries.RegistryBuilder;
@@ -25,9 +24,9 @@ import java.util.Objects;
 import java.util.Arrays;
 
 public abstract class StatBase<T extends StatConfig> implements Stat, Configurable<T> {
-    public static final ResourceLocation REGISTRY_NAME = ResourceLocation.fromNamespaceAndPath(Reference.MODID, "stats");
+    public static final Identifier REGISTRY_NAME = Identifier.fromNamespaceAndPath(Reference.MODID, "stats");
     public static Registry<Stat> REGISTRY;
-    private final ResourceLocation registryName;
+    private final Identifier registryName;
     public static final ObjectList<StatBase<?>> stats = new ObjectArrayList<>(16);
     public int imageID;
     public String key;
@@ -50,11 +49,11 @@ public abstract class StatBase<T extends StatConfig> implements Stat, Configurab
         configSpec = specPair.getRight();
         config = specPair.getLeft();
 
-        registryName = ResourceLocation.fromNamespaceAndPath(Reference.MODID, key.toLowerCase(java.util.Locale.ROOT));
+        registryName = Identifier.fromNamespaceAndPath(Reference.MODID, key.toLowerCase(java.util.Locale.ROOT));
     }
 
     @Override
-    public ResourceLocation getRegistryName() {
+    public Identifier getRegistryName() {
         return registryName;
     }
 
@@ -120,13 +119,9 @@ public abstract class StatBase<T extends StatConfig> implements Stat, Configurab
     public final boolean isEffectiveOn(ItemStack stack, BlockPos pos, Level world) {
         return isEffectiveOn(stack);
     }
-
-    @OnlyIn(Dist.CLIENT)
     public String getLocalizedName() {
         return I18n.get("skill.gokistats_reborn." + this.key);
     }
-
-    @OnlyIn(Dist.CLIENT)
     public String getLocalizedDescription(Player player) {
         double[] values = getDescriptionFormatArguments(player);
         Object[] arguments = new Object[values.length];

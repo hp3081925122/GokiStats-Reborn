@@ -2,13 +2,13 @@ package net.infstudio.goki.common.stat.tool;
 
 
 import net.infstudio.goki.common.utils.Reference;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 
 public class StatBowmanship extends ToolSpecificStat {
-    private static final TagKey<Item> TAG = ItemTags.create(ResourceLocation.fromNamespaceAndPath(Reference.MODID, "bow"));
+    private static final TagKey<Item> TAG = ItemTags.create(Identifier.fromNamespaceAndPath(Reference.MODID, "bow"));
 
     public StatBowmanship(int id, String key, int limit) {
         super(id, key, limit);

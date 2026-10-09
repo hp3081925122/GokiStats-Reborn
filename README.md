@@ -1,12 +1,12 @@
-# GokiStats Reborn — Minecraft 1.21.1 NeoForge 迁移版
+# GokiStats Reborn — Minecraft 26.1.2 NeoForge 迁移版
 
-工程位置：`E:\模组\发cf的模组\GokiStats\1.21.1-neoforge-gokistats-reborn`。
+工程位置：`E:\模组\发cf的模组\GokiStats\26.1.2-neoforge-gokistats-reborn`。
 
-本分支基于 GokiStats Reborn 的 1.20.1 Forge 版本迁移到 Minecraft 1.21.1 NeoForge，保留原有 21 项已注册技能、升级和退还、玩家存档、网络同步、数据包标签与寻宝掉落表、图标和音效。
+本分支基于 GokiStats Reborn 的 1.21.1 NeoForge 版本迁移到 Minecraft 26.1.2 NeoForge，保留原有 21 项已注册技能、升级和退还、玩家存档、网络同步、数据包标签与寻宝掉落表、图标和音效。
 
-- Minecraft：1.21.1。
-- NeoForge：21.1.233。
-- Java：21；Gradle Wrapper：8.8。
+- Minecraft：26.1.2。
+- NeoForge：26.1.2.95。
+- Java：25；Gradle Wrapper：9.4.0。
 - 模组 ID：`gokistats_reborn`；迁移版本：`1.4.0-port.1`。
 - 默认按键：Y；按住 Ctrl 点击技能可退还一级；按住左键可连续升级。
 - 管理员命令：`/gokistats_reborn gui`，`/gokistats_reborn gui <玩家>`；旧 `/gokistats` 保留为别名。
@@ -17,7 +17,7 @@
 在本目录使用 PowerShell：
 
 ```powershell
-$env:JAVA_HOME = 'C:\Users\30819\.jdks\ms-21.0.11'
+$env:JAVA_HOME = 'C:\Users\30819\.jdks\jdk-25.0.4+7'
 .\gradlew.bat build --offline --console=plain
 ```
 
@@ -25,24 +25,25 @@ $env:JAVA_HOME = 'C:\Users\30819\.jdks\ms-21.0.11'
 
 ## 迁移内容
 
-迁移了 NeoForge 的模组元数据、玩家附件存储、网络 Payload、事件总线、属性修饰器、伤害事件、注册表、掉落 Codec、按键和 GuiGraphics 界面，以及 1.21.1 的数据包目录格式。
+迁移了 NeoForge 的模组元数据、玩家附件存储、网络 Payload、事件总线、属性修饰器、伤害事件、注册表、掉落 Codec、按键和 GuiGraphicsExtractor 界面，以及 26.1.2 的数据包目录格式。
 
 玩家数据读取兼容旧版 `gokistats:stat_storage` 和旧技能键，迁移后保存使用 `gokistats_reborn` 命名空间；已有配置文件名和数值保持兼容。保留死亡复制、重生、换维度、多人同步、升级退款、长按连续升级、掉落处理和全部技能效果。
 
 上游停用的 Swimming / Furnace Finesse 保持停用。替换旧版 JAR 后使用，不能同时装入原版与本迁移版。
 
-## 服务端验证
+## 构建与服务端验证
 
-已使用独立 NeoForge 1.21.1 GameTest 服务端运行 26 组功能检查，结果为 `passed=26 failed=0`，服务端随后正常关闭。测试覆盖技能注册与附件、旧 NBT 读取、升级退款、等级上限、配置禁用、存档读取、死亡和重生、属性与战斗事件、移动、掉落、网络同步、定时同步和命令注册。完整记录见 [SERVER-TEST-REPORT.md](SERVER-TEST-REPORT.md)。
+已使用 Java 25 完成 `build --offline`，并启动独立 NeoForge 26.1.2 开发服务端。日志确认 21 项技能注册、模组加载、世界创建和服务端启动完成，出现 `Done`。同时修正了 26.1.2 不再使用的全局战利品修饰器索引文件，改为直接加载 `gokistats_reborn:loot` 修饰器。
 
 复现命令：
 
 ```powershell
-$env:JAVA_HOME = 'C:\Users\30819\.jdks\ms-21.0.11'
-.\gradlew.bat runGameTestServer -PgokiServerTests --offline --console=plain
+$env:JAVA_HOME = 'C:\Users\30819\.jdks\jdk-25.0.4+7'
+.\gradlew.bat build --offline --console=plain
+.\gradlew.bat runServer --offline --console=plain
 ```
 
-GameTest 验证的是开发环境中的实际服务端逻辑，没有启动客户端，也没有把重混淆 JAR 装入独立生产服务器；界面显示、客户端实际收包、真实玩家跨版本存档迁移和长时间压力测试仍需另行验证。
+原 1.21.1 GameTest 测试夹具依赖旧测试实例 API，未直接计入本次 26.1.2 构建；客户端界面显示、客户端实际收包、真实玩家跨版本存档迁移和长时间压力测试仍需另行验证。
 
 ## 授权与归属
 

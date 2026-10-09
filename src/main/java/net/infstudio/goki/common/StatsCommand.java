@@ -17,7 +17,7 @@ public class StatsCommand {
     @SubscribeEvent
     public static void register(RegisterCommandsEvent event) {
         var command = event.getDispatcher().register(Commands.literal(Reference.MODID)
-                .requires(source -> source.hasPermission(2))
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.literal("reload").executes(context -> {
                     context.getSource().sendFailure(Component.translatable("commands.gokistats_reborn.reload.unavailable"));
                     return 0;
@@ -34,6 +34,6 @@ public class StatsCommand {
                             return 1;
                         }))));
         event.getDispatcher().register(Commands.literal(Reference.LEGACY_MODID)
-                .requires(source -> source.hasPermission(2)).redirect(command));
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)).redirect(command));
     }
 }

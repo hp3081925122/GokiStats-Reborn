@@ -3,7 +3,7 @@ package net.infstudio.goki.common.utils;
 import net.infstudio.goki.api.capability.CapabilityStat;
 import net.infstudio.goki.api.stat.Stat;
 import net.infstudio.goki.api.stat.StatState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.infstudio.goki.common.utils.Reference;
 import net.infstudio.goki.api.stat.Stats;
 import net.infstudio.goki.common.config.GokiConfig;
@@ -21,7 +21,7 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import java.util.function.IntFunction;
 
 public class DataHelper {
-    public static final ResourceLocation MAX_HEALTH_MODIFIER = ResourceLocation.fromNamespaceAndPath(Reference.MODID, "max_health_modifier");
+    public static final Identifier MAX_HEALTH_MODIFIER = Identifier.fromNamespaceAndPath(Reference.MODID, "max_health_modifier");
 
     private static StatState getState(Player player, Stat stat) {
         return player.getData(CapabilityStat.STAT).stateMap.computeIfAbsent(stat, key -> new StatState(key, 0, 0));
@@ -119,7 +119,7 @@ public class DataHelper {
 
     public static float getFallResistance(LivingEntity entity) {
         var resistance = 3.0F;
-        var potionEffect = entity.getEffect(MobEffects.JUMP);
+        var potionEffect = entity.getEffect(MobEffects.JUMP_BOOST);
         var bonus = potionEffect != null ? potionEffect.getAmplifier() + 1 : 0.0F;
         // TODO check if this work as float...
 

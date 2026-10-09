@@ -6,7 +6,7 @@ import net.infstudio.goki.api.stat.StatStorage;
 import net.infstudio.goki.common.utils.Reference;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.attachment.IAttachmentHolder;
@@ -18,12 +18,13 @@ import java.util.function.Supplier;
 public class CapabilityStat {
     private static final DeferredRegister<AttachmentType<?>> TYPES = DeferredRegister.create(NeoForgeRegistries.Keys.ATTACHMENT_TYPES, Reference.MODID);
     public static final Supplier<AttachmentType<StatStorage>> STAT = TYPES.register("stat_storage", () -> AttachmentType.builder(StatStorage::new)
-            .serialize(new IAttachmentSerializer<CompoundTag, StatStorage>() {
-                public StatStorage read(IAttachmentHolder holder, CompoundTag tag, HolderLookup.Provider provider) {
-                    return deserializeNBT(tag);
+            .serialize(new IAttachmentSerializer<StatStorage>() {
+                public StatStorage read(IAttachmentHolder holder, net.minecraft.world.level.storage.ValueInput input) {
+                    return deserializeNBT(input.read(com.mojang.serialization.MapCodec.assumeMapUnsafe(CompoundTag.CODEC)).orElseGet(CompoundTag::new));
                 }
-                public CompoundTag write(StatStorage storage, HolderLookup.Provider provider) {
-                    return serializeNBT(storage);
+                public boolean write(StatStorage storage, net.minecraft.world.level.storage.ValueOutput output) {
+                    output.store(serializeNBT(storage));
+                    return true;
                 }
             }).build());
 
@@ -42,14 +43,14 @@ public class CapabilityStat {
 
     public static StatStorage deserializeNBT(CompoundTag nbt) {
         var storage = new StatStorage();
-        for (var key : nbt.getAllKeys()) {
-            var id = ResourceLocation.tryParse(key);
+        for (var key : nbt.keySet()) {
+            var id = Identifier.tryParse(key);
             if (id == null) continue;
-            if (id.getNamespace().equals(Reference.LEGACY_MODID)) id = ResourceLocation.fromNamespaceAndPath(Reference.MODID, id.getPath());
-            var stat = StatBase.REGISTRY.get(id);
+            if (id.getNamespace().equals(Reference.LEGACY_MODID)) id = Identifier.fromNamespaceAndPath(Reference.MODID, id.getPath());
+            var stat = StatBase.REGISTRY.getValue(id);
             if (stat == null) continue;
-            var tag = nbt.getCompound(key);
-            storage.stateMap.put(stat, new StatState(stat, tag.getInt("level"), tag.getInt("revertedLevel")));
+            var tag = nbt.getCompoundOrEmpty(key);
+            storage.stateMap.put(stat, new StatState(stat, tag.getIntOr("level", 0), tag.getIntOr("revertedLevel", 0)));
         }
         return storage;
     }

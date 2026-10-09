@@ -4,7 +4,7 @@ import net.infstudio.goki.api.stat.StatBase;
 import net.infstudio.goki.common.config.stats.StatConfig;
 import net.infstudio.goki.common.utils.DataHelper;
 import net.infstudio.goki.common.utils.Reference;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
@@ -13,8 +13,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 
 public class StatMiningMagician extends StatBase<StatConfig> {
-    public static final TagKey<Block> MAGICIAN_ORE = BlockTags.create(ResourceLocation.fromNamespaceAndPath(Reference.MODID, "magician_ore"));
-    public static final TagKey<Item> MAGICIAN_ITEM = ItemTags.create(ResourceLocation.fromNamespaceAndPath(Reference.MODID, "magician_item"));
+    public static final TagKey<Block> MAGICIAN_ORE = BlockTags.create(Identifier.fromNamespaceAndPath(Reference.MODID, "magician_ore"));
+    public static final TagKey<Item> MAGICIAN_ITEM = ItemTags.create(Identifier.fromNamespaceAndPath(Reference.MODID, "magician_item"));
 
     public StatMiningMagician(int id, String key, int limit) {
         super(id, key, limit);

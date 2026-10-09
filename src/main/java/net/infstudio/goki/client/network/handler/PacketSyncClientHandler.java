@@ -8,7 +8,6 @@ import net.infstudio.goki.common.utils.DataHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.function.Supplier;
@@ -23,8 +22,6 @@ public class PacketSyncClientHandler {
         var ctx = context;
         ctx.enqueueWork(() -> acceptSyncAllInternal(message));
     }
-
-    @OnlyIn(Dist.CLIENT)
     public static void acceptSyncInternal(S2CStatSync message) {
         var player = Minecraft.getInstance().player;
         if (player == null)
@@ -35,8 +32,6 @@ public class PacketSyncClientHandler {
         DataHelper.setPlayerStatLevel(player, stat, message.amount);
         if (stat == Stats.MAX_HEALTH) DataHelper.resetMaxHealth(player);
     }
-
-    @OnlyIn(Dist.CLIENT)
     public static void acceptSyncAllInternal(S2CSyncAll message) {
         var player = Minecraft.getInstance().player;
         if (player == null)

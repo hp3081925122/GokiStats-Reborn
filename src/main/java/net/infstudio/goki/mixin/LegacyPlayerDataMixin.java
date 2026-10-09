@@ -13,12 +13,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Entity.class)
 public abstract class LegacyPlayerDataMixin {
     @Inject(method = "load", at = @At("TAIL"))
-    private void gokistatsReborn$importLegacy(CompoundTag tag, CallbackInfo callback) {
+    private void gokistatsReborn$importLegacy(net.minecraft.world.level.storage.ValueInput input, CallbackInfo callback) {
         if ((Object) this instanceof Player player
-                && !tag.getCompound("neoforge:attachments").contains("gokistats_reborn:stat_storage")) {
-            var legacy = tag.getCompound("ForgeCaps");
-            if (legacy.contains("gokistats:stat_storage")) {
-                var storage = CapabilityStat.deserializeNBT(legacy.getCompound("gokistats:stat_storage"));
+                && !input.childOrEmpty("neoforge:attachments").keySet().contains("gokistats_reborn:stat_storage")) {
+            var legacy = input.childOrEmpty("ForgeCaps");
+            if (legacy.keySet().contains("gokistats:stat_storage")) {
+                var storage = CapabilityStat.deserializeNBT(legacy.read("gokistats:stat_storage", CompoundTag.CODEC).orElseGet(CompoundTag::new));
                 player.setData(CapabilityStat.STAT, storage);
                 GokiStats.log.debug("Imported {} legacy Forge skill states for {}", storage.stateMap.size(), player.getUUID());
             }

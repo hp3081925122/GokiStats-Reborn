@@ -1,6 +1,6 @@
 package net.infstudio.goki.client.gui;
 
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.infstudio.goki.GokiStats;
 import net.infstudio.goki.api.stat.StatBase;
 import net.infstudio.goki.common.network.GokiPacketHandler;
@@ -8,7 +8,7 @@ import net.infstudio.goki.common.network.message.C2SRequestStatSync;
 import net.infstudio.goki.common.network.message.C2SStatSync;
 import net.infstudio.goki.common.utils.DataHelper;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
@@ -81,15 +81,15 @@ public class GuiStats extends Screen {
         }
         GokiStats.log.debug("Stats screen layout: skills={}, columns={}, rows={}, scale={}, cellWidth={}, screen={}x{}", count, columns, rows, scale, cellWidth, width, height);
         if (!requestedSync) {
-            PacketDistributor.sendToServer(new C2SRequestStatSync());
+            ClientPacketDistributor.sendToServer(new C2SRequestStatSync());
             requestedSync = true;
         }
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         if (heldButton != null && !heldButton.isUnderMouse(mouseX, mouseY)) stopHolding();
-        super.render(graphics, mouseX, mouseY, partialTick);
+        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
         drawFittedText(graphics, title.getString(), Math.max(5, gridTop - 20), 0xFFFFFFFF);
         drawFittedText(graphics, I18n.get("ui.gokistats_reborn.menu_hint"), height - 28, 0xFFCCCCCC);
         drawFittedText(graphics, I18n.get("ui.currentxp", DataHelper.getXPTotal(player)), height - 14, 0xFFFFFFFF);
@@ -102,10 +102,13 @@ public class GuiStats extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+    public boolean mouseClicked(net.minecraft.client.input.MouseButtonEvent event, boolean doubleClick) {
+        double mouseX = event.x();
+        double mouseY = event.y();
+        int mouseButton = event.button();
         stopHolding();
         GuiStatButton target = null;
-        if (mouseButton == 0 && !hasControlDown()) {
+        if (mouseButton == 0 && !net.infstudio.goki.client.ClientInput.hasControlDown()) {
             for (var renderable : renderables) {
                 if (renderable instanceof GuiStatButton button && button.isUnderMouse((int) mouseX, (int) mouseY)) {
                     target = button;
@@ -114,7 +117,7 @@ public class GuiStats extends Screen {
             }
         }
         int level = target == null ? -1 : DataHelper.getPlayerStatLevel(player, target.stat);
-        boolean handled = super.mouseClicked(mouseX, mouseY, mouseButton);
+        boolean handled = super.mouseClicked(event, doubleClick);
         if (handled && target != null && canUpgrade(target)) {
             heldButton = target;
             nextRepeatTick = 8;
@@ -125,16 +128,16 @@ public class GuiStats extends Screen {
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int mouseButton) {
-        if (mouseButton == 0) stopHolding();
-        return super.mouseReleased(mouseX, mouseY, mouseButton);
+    public boolean mouseReleased(net.minecraft.client.input.MouseButtonEvent event) {
+        if (event.button() == 0) stopHolding();
+        return super.mouseReleased(event);
     }
 
     @Override
     public void tick() {
         super.tick();
         if (heldButton == null) return;
-        if (minecraft == null || !minecraft.isWindowActive() || hasControlDown() || !canUpgrade(heldButton)) {
+        if (minecraft == null || !minecraft.isWindowActive() || net.infstudio.goki.client.ClientInput.hasControlDown() || !canUpgrade(heldButton)) {
             stopHolding();
             return;
         }
@@ -183,20 +186,20 @@ public class GuiStats extends Screen {
         awaitingTicks = 0;
     }
 
-    private void drawFittedText(GuiGraphics graphics, String text, int y, int color) {
+    private void drawFittedText(GuiGraphicsExtractor graphics, String text, int y, int color) {
         float scale = Math.min(1F, Math.max(1, width - MARGIN * 2) / (float) Math.max(1, font.width(text)));
-        graphics.pose().pushPose();
+        graphics.pose().pushMatrix();
         try {
-            graphics.pose().translate(width / 2F, y, 0);
-            graphics.pose().scale(scale, scale, 1F);
-            graphics.drawCenteredString(font, text, 0, 0, color);
+            graphics.pose().translate(width / 2F, y);
+            graphics.pose().scale(scale, scale);
+            graphics.centeredText(font, text, 0, 0, color);
         } finally {
-            graphics.pose().popPose();
+            graphics.pose().popMatrix();
         }
     }
 
     protected void actionPerformed(Button button) {
         if (button instanceof GuiStatButton statButton && statButton.id >= 0 && statButton.id < StatBase.stats.size())
-            PacketDistributor.sendToServer(new C2SStatSync(statButton.id, hasControlDown() ? -1 : 1));
+            ClientPacketDistributor.sendToServer(new C2SStatSync(statButton.id, net.infstudio.goki.client.ClientInput.hasControlDown() ? -1 : 1));
     }
 }

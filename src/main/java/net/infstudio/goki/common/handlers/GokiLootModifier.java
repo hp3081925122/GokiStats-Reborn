@@ -8,7 +8,7 @@ import net.infstudio.goki.common.init.GokiSounds;
 import net.infstudio.goki.common.stat.tool.StatMiningMagician;
 import net.infstudio.goki.common.utils.DataHelper;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
@@ -28,8 +28,8 @@ public class GokiLootModifier extends LootModifier {
     public static final MapCodec<GokiLootModifier> CODEC = RecordCodecBuilder.mapCodec(instance -> codecStart(instance).apply(instance, GokiLootModifier::new));
     private static final ThreadLocal<Boolean> APPLYING_TREASURE = ThreadLocal.withInitial(() -> false);
 
-    protected GokiLootModifier(LootItemCondition[] conditions) {
-        super(conditions);
+    protected GokiLootModifier(LootItemCondition[] conditions, int priority) {
+        super(conditions, priority);
     }
 
     @Override
@@ -40,16 +40,16 @@ public class GokiLootModifier extends LootModifier {
     @Nonnull
     @Override
     protected ObjectArrayList<ItemStack> doApply(ObjectArrayList<ItemStack> generatedLoot, LootContext context) {
-        if (APPLYING_TREASURE.get() || !context.hasParam(LootContextParams.BLOCK_STATE)
-                || !context.hasParam(LootContextParams.ORIGIN)
-                || !(context.getParamOrNull(LootContextParams.THIS_ENTITY) instanceof Player player)) {
+        if (APPLYING_TREASURE.get() || !context.hasParameter(LootContextParams.BLOCK_STATE)
+                || !context.hasParameter(LootContextParams.ORIGIN)
+                || !(context.getOptionalParameter(LootContextParams.THIS_ENTITY) instanceof Player player)) {
             return generatedLoot;
         }
-        var block = context.getParam(LootContextParams.BLOCK_STATE).getBlock();
-        var position = BlockPos.containing(context.getParam(LootContextParams.ORIGIN));
+        var block = context.getParameter(LootContextParams.BLOCK_STATE).getBlock();
+        var position = BlockPos.containing(context.getParameter(LootContextParams.ORIGIN));
         if (Stats.TREASURE_FINDER.isEnabled() && DataHelper.getPlayerStatLevel(player, Stats.TREASURE_FINDER) > 0) {
             var blockId = BuiltInRegistries.BLOCK.getKey(block);
-            var id = ResourceLocation.fromNamespaceAndPath(blockId.getNamespace(), "treasure_finder/" + blockId.getPath());
+            var id = Identifier.fromNamespaceAndPath(blockId.getNamespace(), "treasure_finder/" + blockId.getPath());
             var table = context.getLevel().getServer().reloadableRegistries().getLootTable(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.LOOT_TABLE, id));
             var items = new ObjectArrayList<ItemStack>();
             APPLYING_TREASURE.set(true);
@@ -70,7 +70,7 @@ public class GokiLootModifier extends LootModifier {
                 if (player.getRandom().nextDouble() * 100.0D > Stats.MINING_MAGICIAN.getBonus(player)) continue;
                 var item = generatedLoot.get(i);
                 if (item.getItem() instanceof BlockItem blockItem && blockItem.getBlock() == block) {
-                    var extra = BuiltInRegistries.BLOCK.getTag(StatMiningMagician.MAGICIAN_ORE).orElseThrow().getRandomElement(context.getRandom());
+                    var extra = BuiltInRegistries.BLOCK.get(StatMiningMagician.MAGICIAN_ORE).orElseThrow().getRandomElement(context.getRandom());
                     if (extra.isPresent()) {
                         var stack = new ItemStack(extra.get().value(), item.getCount());
                         if (!stack.isEmpty()) {
@@ -79,7 +79,7 @@ public class GokiLootModifier extends LootModifier {
                         }
                     }
                 } else {
-                    var extra = BuiltInRegistries.ITEM.getTag(StatMiningMagician.MAGICIAN_ITEM).orElseThrow().getRandomElement(context.getRandom());
+                    var extra = BuiltInRegistries.ITEM.get(StatMiningMagician.MAGICIAN_ITEM).orElseThrow().getRandomElement(context.getRandom());
                     if (extra.isPresent()) {
                         generatedLoot.add(new ItemStack(extra.get().value(), item.getCount()));
                         magicHappened = true;

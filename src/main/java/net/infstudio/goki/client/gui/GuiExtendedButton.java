@@ -1,6 +1,6 @@
 package net.infstudio.goki.client.gui;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
@@ -23,7 +23,7 @@ public class GuiExtendedButton extends Button {
 
 
     @Override
-    public void renderWidget(@Nonnull GuiGraphics stack, int mouseX, int mouseY, float partialTicks) {
+    public void extractContents(@Nonnull GuiGraphicsExtractor stack, int mouseX, int mouseY, float partialTicks) {
         if (!this.disabled) {
             if (!isUnderMouse(mouseX, mouseY)) {
                 drawIdle(stack, Minecraft.getInstance(), mouseX, mouseY);
@@ -40,71 +40,71 @@ public class GuiExtendedButton extends Button {
         return (mouseX >= this.getX()) && (mouseY >= this.getY()) && (mouseX < this.getX() + this.width) && (mouseY < this.getY() + this.height);
     }
 
-    private void drawBorder(GuiGraphics stack) {
-        stack.hLine(-1, this.width, 0, BORDER_COLOR);
-        stack.hLine(-1, this.width, this.height, BORDER_COLOR);
-        stack.vLine(-1, 0, this.height, BORDER_COLOR);
-        stack.vLine(this.width, 0, this.height, BORDER_COLOR);
+    private void drawBorder(GuiGraphicsExtractor stack) {
+        stack.horizontalLine(-1, this.width, 0, BORDER_COLOR);
+        stack.horizontalLine(-1, this.width, this.height, BORDER_COLOR);
+        stack.verticalLine(-1, 0, this.height, BORDER_COLOR);
+        stack.verticalLine(this.width, 0, this.height, BORDER_COLOR);
     }
 
-    private void drawDisabled(GuiGraphics stack, Minecraft mc, int mouseX, int mouseY) {
-        stack.pose().pushPose();
-        stack.pose().translate(this.getX(), this.getY(), 0.0F);
+    private void drawDisabled(GuiGraphicsExtractor stack, Minecraft mc, int mouseX, int mouseY) {
+        stack.pose().pushMatrix();
+        stack.pose().translate(this.getX(), this.getY());
         stack.fill(0, 0, this.width, this.height, -2011028958);
-        stack.drawCenteredString(mc.font,
+        stack.centeredText(mc.font,
                 this.getMessage(),
                 this.width / 2,
                 this.height / 2 - mc.font.lineHeight / 2 + 1,
                 3355443);
         drawBorder(stack);
-        stack.pose().popPose();
+        stack.pose().popMatrix();
     }
 
-    private void drawIdle(GuiGraphics stack, Minecraft mc, int mouseX, int mouseY) {
-        stack.pose().pushPose();
-        stack.pose().translate(this.getX(), this.getY(), 0.0F);
+    private void drawIdle(GuiGraphicsExtractor stack, Minecraft mc, int mouseX, int mouseY) {
+        stack.pose().pushMatrix();
+        stack.pose().translate(this.getX(), this.getY());
         stack.fill(0,
                 0,
                 this.width,
                 this.height,
                 this.backgroundColor + -2013265920);
-        stack.drawCenteredString(mc.font,
+        stack.centeredText(mc.font,
                 this.getMessage(),
                 this.width / 2,
                 this.height / 2 - mc.font.lineHeight / 2 + 1,
                 16777215);
         drawBorder(stack);
-        stack.pose().popPose();
+        stack.pose().popMatrix();
     }
 
-    private void drawHover(GuiGraphics stack, Minecraft mc, int mouseX, int mouseY) {
-        stack.pose().pushPose();
-        stack.pose().translate(this.getX(), this.getY(), 0.0F);
+    private void drawHover(GuiGraphicsExtractor stack, Minecraft mc, int mouseX, int mouseY) {
+        stack.pose().pushMatrix();
+        stack.pose().translate(this.getX(), this.getY());
         stack.fill(0,
                 0,
                 this.width,
                 this.height,
                 this.backgroundColor + -16777216);
-        stack.drawCenteredString(mc.font,
+        stack.centeredText(mc.font,
                 this.getMessage(),
                 this.width / 2,
                 this.height / 2 - mc.font.lineHeight / 2 + 1,
                 16763904);
         drawBorder(stack);
-        stack.pose().popPose();
+        stack.pose().popMatrix();
     }
 
-    private void drawDown(GuiGraphics stack, Minecraft mc, int mouseX, int mouseY) {
-        stack.pose().pushPose();
-        stack.pose().translate(this.getX(), this.getY(), 0.0F);
+    private void drawDown(GuiGraphicsExtractor stack, Minecraft mc, int mouseX, int mouseY) {
+        stack.pose().pushMatrix();
+        stack.pose().translate(this.getX(), this.getY());
         stack.fill(0, 0, this.width, this.height, -16777216);
-        stack.drawCenteredString(mc.font,
+        stack.centeredText(mc.font,
                 this.getMessage(),
                 this.width / 2,
                 this.height / 2 - mc.font.lineHeight / 2 + 1,
                 16763904);
         drawBorder(stack);
-        stack.pose().popPose();
+        stack.pose().popMatrix();
     }
 
     public void setBackgroundColor(int color) {
@@ -112,8 +112,9 @@ public class GuiExtendedButton extends Button {
     }
 
     @Override
-    public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
+    public boolean keyReleased(net.minecraft.client.input.KeyEvent event) {
         if (this.active && this.visible) {
+            int keyCode = event.key();
             if (keyCode != 257 && keyCode != 32 && keyCode != 335) {
                 return false;
             } else {
@@ -126,8 +127,8 @@ public class GuiExtendedButton extends Button {
     }
 
     @Override
-    public void onPress() {
-        super.onPress();
+    public void onPress(net.minecraft.client.input.InputWithModifiers input) {
+        super.onPress(input);
         this.pressed = true;
     }
 

@@ -7,8 +7,6 @@ import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -17,7 +15,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.util.ObfuscationReflectionHelper;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.infstudio.goki.common.utils.Reference;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -25,9 +23,9 @@ import static net.infstudio.goki.common.utils.Reference.MODID;
 
 @EventBusSubscriber(modid = MODID)
 public class TickHandler {
-    public static final ResourceLocation knockbackResistanceID = ResourceLocation.fromNamespaceAndPath(Reference.MODID, "knockbackresistanceid");
-    public static final ResourceLocation stealthSpeedID = ResourceLocation.fromNamespaceAndPath(Reference.MODID, "stealthspeedid");
-    public static final ResourceLocation swimSpeedID = ResourceLocation.fromNamespaceAndPath(Reference.MODID, "swimspeedid");
+    public static final Identifier knockbackResistanceID = Identifier.fromNamespaceAndPath(Reference.MODID, "knockbackresistanceid");
+    public static final Identifier stealthSpeedID = Identifier.fromNamespaceAndPath(Reference.MODID, "stealthspeedid");
+    public static final Identifier swimSpeedID = Identifier.fromNamespaceAndPath(Reference.MODID, "swimspeedid");
 
     public static AtomicInteger tickTimer = new AtomicInteger();
 

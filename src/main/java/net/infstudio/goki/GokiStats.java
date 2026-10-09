@@ -44,7 +44,7 @@ public class GokiStats {
         CapabilityStat.register(eventBus);
         NeoForge.EVENT_BUS.register(TickHandler.class);
         initConfig(container);
-        log.info("GokiStats Reborn unofficial NeoForge 1.21.1 port initialized with {} skills", StatBase.stats.size());
+        log.info("GokiStats Reborn unofficial NeoForge 26.1.2 port initialized with {} skills", StatBase.stats.size());
     }
 
     private void createRegistry(NewRegistryEvent event) {
