@@ -57,7 +57,7 @@
   "ui.currentxp": "Current xp: %.2fxp",
   "ui.openmenu": "Open Stats Menu",
   "ui.openhelper": "Open Stats Compatibility Helper",
-  "ui.hover": "Click to upgrade, or Ctrl+Click to downgrade",
+  "ui.hover": "Click to upgrade, hold left click to repeat, or Ctrl+click to downgrade",
   "ui.revert": "Click to downgrade",
   "ui.reverted": "Downgraded levels: %d/%s",
   "ui.infinite": "Infinite",
@@ -67,6 +67,6 @@
   "skill.gokistats_reborn.treasure_finder.disabled": "Requires Additional Events to be installed",
   "skill.gokistats_reborn.mining_magician.disabled": "Requires Additional Events to be installed",
   "ui.gokistats_reborn.menu_title": "GokiStats Reborn - Skills",
-  "ui.gokistats_reborn.menu_hint": "Click: upgrade | Ctrl+click: downgrade | Esc: close",
+  "ui.gokistats_reborn.menu_hint": "Click/hold left click: upgrade | Ctrl+click: downgrade | Esc: close",
   "ui.gokistats_reborn.level": "%s/%s"
 }

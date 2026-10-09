@@ -25,6 +25,11 @@ public class GuiStats extends Screen {
     private final Player player = Minecraft.getInstance().player;
     private boolean requestedSync;
     private int gridTop;
+    private GuiStatButton heldButton;
+    private int holdTicks;
+    private int nextRepeatTick;
+    private int awaitingLevel;
+    private int awaitingTicks;
 
     public GuiStats() {
         super(Component.translatable("ui.gokistats_reborn.menu_title"));
@@ -37,6 +42,7 @@ public class GuiStats extends Screen {
 
     @Override
     public void init() {
+        stopHolding();
         int count = StatBase.stats.size();
         int labelWidth = STATUS_BUTTON_WIDTH;
         for (var stat : StatBase.stats) {
@@ -81,6 +87,7 @@ public class GuiStats extends Screen {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        if (heldButton != null && !heldButton.isUnderMouse(mouseX, mouseY)) stopHolding();
         renderBackground(graphics);
         drawFittedText(graphics, title.getString(), Math.max(5, gridTop - 20), 0xFFFFFFFF);
         super.render(graphics, mouseX, mouseY, partialTick);
@@ -92,6 +99,88 @@ public class GuiStats extends Screen {
                 break;
             }
         }
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+        stopHolding();
+        GuiStatButton target = null;
+        if (mouseButton == 0 && !hasControlDown()) {
+            for (var renderable : renderables) {
+                if (renderable instanceof GuiStatButton button && button.isUnderMouse((int) mouseX, (int) mouseY)) {
+                    target = button;
+                    break;
+                }
+            }
+        }
+        int level = target == null ? -1 : DataHelper.getPlayerStatLevel(player, target.stat);
+        boolean handled = super.mouseClicked(mouseX, mouseY, mouseButton);
+        if (handled && target != null && canUpgrade(target)) {
+            heldButton = target;
+            nextRepeatTick = 8;
+            awaitingLevel = level;
+            GokiStats.log.debug("Started hold-to-upgrade: skill={}, level={}, delayTicks=8, intervalTicks=2", target.stat.key, level);
+        }
+        return handled;
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int mouseButton) {
+        if (mouseButton == 0) stopHolding();
+        return super.mouseReleased(mouseX, mouseY, mouseButton);
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (heldButton == null) return;
+        if (minecraft == null || !minecraft.isWindowActive() || hasControlDown() || !canUpgrade(heldButton)) {
+            stopHolding();
+            return;
+        }
+        holdTicks++;
+        int level = DataHelper.getPlayerStatLevel(player, heldButton.stat);
+        if (awaitingLevel >= 0) {
+            if (level == awaitingLevel) {
+                if (++awaitingTicks >= 40) {
+                    GokiStats.log.debug("Stopped hold-to-upgrade after sync timeout: skill={}, level={}", heldButton.stat.key, level);
+                    stopHolding();
+                }
+                return;
+            }
+            if (level != awaitingLevel + 1) {
+                stopHolding();
+                return;
+            }
+            awaitingLevel = -1;
+        }
+        if (holdTicks >= nextRepeatTick) {
+            actionPerformed(heldButton);
+            awaitingLevel = level;
+            awaitingTicks = 0;
+            nextRepeatTick = holdTicks + 2;
+        }
+    }
+
+    @Override
+    public void removed() {
+        stopHolding();
+        super.removed();
+    }
+
+    private boolean canUpgrade(GuiStatButton button) {
+        int level = DataHelper.getPlayerStatLevel(player, button.stat);
+        return button.active && button.visible && button.stat.isEnabled() && level < button.stat.getLimit()
+                && DataHelper.getXPTotal(player) >= button.stat.getCost(level);
+    }
+
+    private void stopHolding() {
+        if (heldButton != null) GokiStats.log.debug("Stopped hold-to-upgrade: skill={}, ticks={}", heldButton.stat.key, holdTicks);
+        heldButton = null;
+        holdTicks = 0;
+        nextRepeatTick = 0;
+        awaitingLevel = -1;
+        awaitingTicks = 0;
     }
 
     private void drawFittedText(GuiGraphics graphics, String text, int y, int color) {

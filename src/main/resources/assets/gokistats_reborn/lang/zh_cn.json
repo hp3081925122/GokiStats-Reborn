@@ -56,7 +56,7 @@
   "ui.currentxp": "当前经验: %.2fxp",
   "ui.openmenu": "打开菜单",
   "ui.openhelper": "打开兼容性助手",
-  "ui.hover": "左击升级, Ctrl+左击降级",
+  "ui.hover": "点击升级，长按左键连续升级，Ctrl+点击降级",
   "ui.revert": "降级",
   "ui.reverted": "降级次数：%d/%s",
   "ui.infinite": "无限",
@@ -67,6 +67,6 @@
   "skill.gokistats_reborn.treasure_finder.disabled": "未安装 Additional Events 模组时本功能禁用。",
   "skill.gokistats_reborn.mining_magician.disabled": "未安装 Additional Events 模组时本功能禁用。",
   "ui.gokistats_reborn.menu_title": "GokiStats Reborn - 技能菜单",
-  "ui.gokistats_reborn.menu_hint": "点击升级 · Ctrl+点击降级 · Esc关闭",
+  "ui.gokistats_reborn.menu_hint": "点击/长按左键升级 · Ctrl+点击降级 · Esc关闭",
   "ui.gokistats_reborn.level": "%s/%s"
 }

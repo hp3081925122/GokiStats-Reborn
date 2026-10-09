@@ -56,7 +56,7 @@
   "ui.currentxp": "Текущий уровень опыта: %.2fxp",
   "ui.openmenu": "Открыть меню прокачки",
   "ui.openhelper": "Открыть меню настройки совместимости предметов",
-  "ui.hover": "Нажми ЛКМ чтобы прокачать, или Ctrl+ЛКМ, чтобы откатить",
+  "ui.hover": "Клик: улучшить, удержание ЛКМ: повторять, Ctrl+клик: понизить",
   "ui.revert": "Нажми, чтобы откатить",
   "ui.reverted": "Откаченные уровни: %d/%s",
   "ui.infinite": "Неограниченно",
@@ -64,6 +64,6 @@
   "key.categories.gokistats_reborn": "GokiStats Reborn",
   "commands.gokistats_reborn.reload.unavailable": "Skill configuration is managed by Forge. Restart the world to apply changes.",
   "ui.gokistats_reborn.menu_title": "GokiStats Reborn - Навыки",
-  "ui.gokistats_reborn.menu_hint": "Клик: улучшить | Ctrl+клик: понизить | Esc: закрыть",
+  "ui.gokistats_reborn.menu_hint": "Клик/удержание ЛКМ: улучшить | Ctrl+клик: понизить | Esc: закрыть",
   "ui.gokistats_reborn.level": "%s/%s"
 }
