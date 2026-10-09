@@ -2,7 +2,6 @@ package net.infstudio.goki.common.stat.special;
 
 import net.infstudio.goki.api.stat.StatSpecial;
 import net.infstudio.goki.api.stat.StatSpecialBase;
-import net.minecraft.client.resources.language.I18n;
 import net.minecraft.world.entity.player.Player;
 
 public class StatFurnaceFinesse extends StatSpecialBase implements StatSpecial {
@@ -31,12 +30,4 @@ public class StatFurnaceFinesse extends StatSpecialBase implements StatSpecial {
         // getSecondaryBonus(amount) + "% of the time while using a furnace.";
     }
 
-    @Override
-    public String getLocalizedDescription(Player player) {
-        if (isEnabled())
-            return I18n.get("skill.gokistats_reborn." + this.key + ".text",
-                this.getDescriptionFormatArguments(player)[0],
-                this.getDescriptionFormatArguments(player)[1]);
-        else return super.getLocalizedDescription(player);
-    }
 }

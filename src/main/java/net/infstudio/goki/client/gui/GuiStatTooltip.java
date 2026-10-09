@@ -41,8 +41,10 @@ public class GuiStatTooltip {
         add(lines, stat.getLocalizedName() + " " + I18n.get("ui.gokistats_reborn.level", level, stat.getLimit()), -13312, wrapWidth);
         add(lines, stat.getLocalizedDescription(player), -1, wrapWidth);
         add(lines, level >= stat.getLimit() ? I18n.get("ui.max") : I18n.get("ui.cost", stat.getCost(level)), -16724737, wrapWidth);
-        if (Screen.hasControlDown())
-            add(lines, I18n.get("ui.return", stat.getCost(level) * GokiConfig.SERVER.globalRevertFactor.get()), -16724737, wrapWidth);
+        if (Screen.hasControlDown()) {
+            int refund = level > 0 ? (int) (stat.getCost(level - 1) * GokiConfig.SERVER.globalRevertFactor.get()) : 0;
+            add(lines, I18n.get("ui.return", refund), -16724737, wrapWidth);
+        }
         int reverted = DataHelper.getPlayerRevertStatLevel(player, stat);
         if (reverted > 0) {
             int limit = GokiConfig.SERVER.globalMaxRevertLevel.get();

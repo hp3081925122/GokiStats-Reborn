@@ -2,7 +2,6 @@ package net.infstudio.goki.common.stat.special.leaper;
 
 import net.infstudio.goki.api.stat.Stats;
 import net.infstudio.goki.common.utils.DataHelper;
-import net.minecraft.client.resources.language.I18n;
 import net.minecraft.world.entity.player.Player;
 
 public class StatStealth extends StatLeaper {
@@ -39,11 +38,4 @@ public class StatStealth extends StatLeaper {
         // "% more often (" + newReap + "%) when sneaking.";
     }
 
-    @Override
-    public String getLocalizedDescription(Player player) {
-        return I18n.get("skill.gokistats_reborn." + this.key + ".text",
-                this.getDescriptionFormatArguments(player)[0],
-                this.getDescriptionFormatArguments(player)[1],
-                this.getDescriptionFormatArguments(player)[2]);
-    }
 }

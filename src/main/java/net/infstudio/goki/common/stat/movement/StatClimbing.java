@@ -20,7 +20,6 @@ public class StatClimbing extends StatBase<StatConfig> {
         if (Reference.isPlayerAPILoaded) {
             return I18n.get("skill.gokistats_reborn." + this.key + ".disabled");
         }
-        return I18n.get("skill.gokistats_reborn." + this.key + ".text",
-                this.getDescriptionFormatArguments(player)[0]);
+        return super.getLocalizedDescription(player);
     }
 }

@@ -3,7 +3,6 @@ package net.infstudio.goki.common.stat.special.leaper;
 import net.infstudio.goki.api.stat.StatSpecial;
 import net.infstudio.goki.api.stat.StatSpecialBase;
 import net.infstudio.goki.common.utils.DataHelper;
-import net.minecraft.client.resources.language.I18n;
 import net.minecraft.world.entity.player.Player;
 
 public abstract class StatLeaper extends StatSpecialBase implements StatSpecial {
@@ -34,10 +33,4 @@ public abstract class StatLeaper extends StatSpecialBase implements StatSpecial 
         // 100, 1) + "% farther when sprinting.";
     }
 
-    @Override
-    public String getLocalizedDescription(Player player) {
-        return I18n.get("skill.gokistats_reborn." + this.key + ".text",
-                this.getDescriptionFormatArguments(player)[0],
-                this.getDescriptionFormatArguments(player)[1]);
-    }
 }

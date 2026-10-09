@@ -2,6 +2,8 @@ package net.infstudio.goki.api.stat;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
+import net.infstudio.goki.GokiStats;
+import net.infstudio.goki.common.utils.DisplayNumbers;
 import net.infstudio.goki.common.config.Configurable;
 import net.infstudio.goki.common.config.GokiConfig;
 import net.infstudio.goki.common.config.stats.StatConfig;
@@ -21,6 +23,7 @@ import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegistryBuilder;
 
 import java.util.Objects;
+import java.util.Arrays;
 
 public abstract class StatBase<T extends StatConfig> implements Stat, Configurable<T> {
     public static final ResourceLocation REGISTRY_NAME = new ResourceLocation(Reference.MODID, "stats");
@@ -31,6 +34,7 @@ public abstract class StatBase<T extends StatConfig> implements Stat, Configurab
     public int imageID;
     public String key;
 
+    private static boolean integerDescriptionLogged;
     private boolean enabled = true;
     private final int limit;
 
@@ -126,8 +130,14 @@ public abstract class StatBase<T extends StatConfig> implements Stat, Configurab
 
     @OnlyIn(Dist.CLIENT)
     public String getLocalizedDescription(Player player) {
-        return I18n.get("skill.gokistats_reborn." + this.key + ".text",
-                this.getDescriptionFormatArguments(player)[0]);
+        double[] values = getDescriptionFormatArguments(player);
+        Object[] arguments = new Object[values.length];
+        for (int index = 0; index < values.length; index++) arguments[index] = DisplayNumbers.integer(values[index]);
+        if (!integerDescriptionLogged) {
+            GokiStats.log.debug("Integer skill description display for {}: raw={}, displayed={}", key, Arrays.toString(values), Arrays.toString(arguments));
+            integerDescriptionLogged = true;
+        }
+        return I18n.get("skill.gokistats_reborn." + this.key + ".text", arguments);
     }
 
     @Override

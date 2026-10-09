@@ -1,7 +1,6 @@
 package net.infstudio.goki.common.stat.damage;
 
 import net.infstudio.goki.common.utils.DataHelper;
-import net.minecraft.client.resources.language.I18n;
 import net.minecraft.world.entity.player.Player;
 
 public class StatFeatherFall extends DamageSourceProtectionStat {
@@ -25,13 +24,6 @@ public class StatFeatherFall extends DamageSourceProtectionStat {
         // Helper.trimDecimals(getBonus(getPlayerStatLevel(player)) * 100, 1) +
         // "% less damage from falling more than " + height + " blocks.";
 
-    }
-
-    @Override
-    public String getLocalizedDescription(Player player) {
-        return I18n.get("skill.gokistats_reborn." + this.key + ".text",
-                this.getDescriptionFormatArguments(player)[0],
-                this.getDescriptionFormatArguments(player)[1]);
     }
 
     @Override
