@@ -121,7 +121,7 @@ public class TickHandler {
 
         if (player.onClimbable() && !player.isShiftKeyDown()) {
             var multiplier = Stats.CLIMBING.getBonus(player);
-            player.move(MoverType.SELF, player.getDeltaMovement().multiply(1, multiplier, 1));
+            player.move(MoverType.SELF, player.getDeltaMovement().multiply(0, multiplier, 0));
         }
     }
 

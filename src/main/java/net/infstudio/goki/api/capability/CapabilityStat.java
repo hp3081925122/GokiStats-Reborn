@@ -16,7 +16,7 @@ import net.minecraftforge.fml.common.Mod;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-@Mod.EventBusSubscriber(modid = Reference.MODID)
+@Mod.EventBusSubscriber(modid = Reference.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class CapabilityStat {
     public static Capability<StatStorage> STAT = CapabilityManager.get(new CapabilityToken<>(){});
 
@@ -46,13 +46,22 @@ public class CapabilityStat {
 
     public static class Provider implements ICapabilitySerializable<CompoundTag> {
         public StatStorage statStorage = new StatStorage();
-        public final LazyOptional<StatStorage> storageProperty = LazyOptional.of(() -> statStorage);
+        public LazyOptional<StatStorage> storageProperty = LazyOptional.of(() -> statStorage);
 
         @Override
         @Nonnull
         public <T> LazyOptional<T> getCapability(@Nonnull final Capability<T> cap, final @Nullable Direction side) {
-            if (cap == STAT) return (LazyOptional<T>) storageProperty;
+            if (cap == STAT) {
+                if (storageProperty == null) storageProperty = LazyOptional.of(() -> statStorage);
+                return storageProperty.cast();
+            }
             else return LazyOptional.empty();
+        }
+
+        public void invalidate() {
+            var previous = storageProperty;
+            storageProperty = null;
+            if (previous != null) previous.invalidate();
         }
 
         @Override

@@ -31,7 +31,7 @@ public class CommonHandler {
         if (event.getObject() instanceof Player) {
             var provider = new CapabilityStat.Provider();
             event.addCapability(new ResourceLocation(Reference.MODID, "stat_storage"), provider);
-            event.addListener(provider.storageProperty::invalidate);
+            event.addListener(provider::invalidate);
         }
     }
 
@@ -58,6 +58,7 @@ public class CommonHandler {
                 event.getEntity().getCapability(CapabilityStat.STAT).ifPresent(copy -> {
                     original.stateMap.forEach((stat, state) -> copy.stateMap.put(stat,
                             new net.infstudio.goki.api.stat.StatState(stat, state.level, state.revertedLevel)));
+                    net.infstudio.goki.GokiStats.log.debug("Copied {} skill states for player respawn, death={}", copy.stateMap.size(), event.isWasDeath());
                 }));
         event.getOriginal().invalidateCaps();
     }
