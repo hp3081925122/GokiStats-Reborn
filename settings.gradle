@@ -9,7 +9,4 @@ pluginManagement {
     }
 }
 
-org.apache.tools.ant.DirectoryScanner.removeDefaultExclude('**/.gitignore')
-org.apache.tools.ant.DirectoryScanner.removeDefaultExclude('**/.gitattributes')
-
 rootProject.name = 'gokistats_reborn'

@@ -45,7 +45,7 @@ $env:JAVA_HOME = 'C:\Users\30819\.jdks\ms-17.0.18'
 ## 验证边界
 
 已完成编译、正式重混淆构建、静态资源检查，以及 Forge 47.4.23 GameTest 服务端中的 26 组功能检查，结果全部通过。
-测试覆盖模拟玩家的升级退还、存档 NBT、死亡与末地返回、属性和战斗事件、实际方块掉落、同步包发送与两名模拟玩家的数据隔离。服务端测试时的工程包含 69 个 Java 源文件；后续界面改动新增客户端皮肤类，未将历史服务端测试宣称为新界面运行验证。
+测试覆盖模拟玩家的升级退还、存档 NBT、死亡与末地返回、属性和战斗事件、实际方块掉落、同步包发送与两名模拟玩家的数据隔离。测试环境与正式工程使用相同的 69 个 Java 源文件。
 尚未启动真实客户端联机；界面、客户端实际收包、移动手感、跨服务器重启后的真人登录和 1.18.1 存档迁移仍待验证。GameTest 源码运行结果也不代替正式重混淆 JAR 在独立生产服务端的装载测试。具体结果见 SERVER-TEST-REPORT.md，手工补测项目见 TESTING.md。
 元数据按目录约定未设置最高版本，但开发和构建目标仅为 Minecraft 1.20.1 Forge，不代表已兼容其他版本。
 
@@ -55,10 +55,5 @@ $env:JAVA_HOME = 'C:\Users\30819\.jdks\ms-17.0.18'
 原项目：https://github.com/InfinityStudio/GokiStats
 原发布页：https://www.curseforge.com/minecraft/mc-mods/gokistats
 
-代码为 GPL-3.0，上游资源为 CC BY-NC-SA 4.0，新增 Kenney 界面素材为 CC0。授权依据及迁移日期见 NOTICE.md、RESOURCE-LICENSE.md、UPSTREAM-README.md 和 LICENSE。
+代码为 GPL-3.0，资源为 CC BY-NC-SA 4.0。授权依据及迁移日期见 NOTICE.md、RESOURCE-LICENSE.md、UPSTREAM-README.md 和 LICENSE。
 资源的非商业限制需要单独遵守，参与广告、收益计划或其他商业使用前应核对授权，必要时取得原权利人许可。
-
-## 可替换的贴图界面
-
-技能界面使用 Kenney 免费 CC0 像素 UI 素材，面板、状态框、经验栏与提示框全部贴图绘制。贴图路径和切片、配色、布局由资源 JSON 控制，支持资源包覆盖与 F3+T 重载。保留技能图标、全部技能和升级退还操作，小窗口缩放与提示框边界同步处理。
-修正经验/成本浮点格式参数与退款提示数值，使提示显示与服务端实际整数返还一致。详细换肤方法、素材许可及客户端待测项目见 UI-SKIN.md。
